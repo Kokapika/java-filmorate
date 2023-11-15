@@ -2,9 +2,11 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.InvalidIdException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,24 +21,31 @@ public class FilmController {
     private int generateId = 1;
 
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
+    public Film addFilm(@Valid @RequestBody Film film) {
         log.info("Получен POST запрос на добавление фильма");
         validationFilm(film);
         film.setId(generateId);
         films.put(generateId++, film);
+        log.debug("Добавлен новый фильм " + film.getName());
         return film;
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film film) {
+    public Film updateFilm(@Valid @RequestBody Film film) {
         log.info("Получен PUT запрос на обновление фильма");
         validationFilm(film);
-        Film f = films.get(film.getId());
-        f.setName(film.getName());
-        f.setDescription(film.getDescription());
-        f.setDuration(film.getDuration());
-        f.setReleaseDate(film.getReleaseDate());
-        return f;
+        if (films.containsKey(film.getId())) {
+            films.put(film.getId(), film);
+            log.debug("Обновлена информация о фильме " + film.getName() + ", с id = " + film.getId());
+        } else if (film.getId() == null) {
+            film.setId(generateId++);
+            films.put(film.getId(), film);
+            log.debug("Добавлен новый фильм " + film.getName());
+        } else {
+            log.debug("Не удалось обновить данные о фильме");
+            throw new InvalidIdException("Неверный идентификатор фильма");
+        }
+        return film;
     }
 
     @GetMapping

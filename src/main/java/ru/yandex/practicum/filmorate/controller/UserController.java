@@ -2,9 +2,11 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.InvalidIdException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +21,7 @@ public class UserController {
     private int generateId = 1;
 
     @PostMapping
-    public User addUser(@RequestBody User user) {
+    public User addUser(@Valid @RequestBody User user) {
         log.info("Получен POST запрос на добавление пользователя");
         validationUser(user);
         user.setId(generateId);
@@ -31,15 +33,21 @@ public class UserController {
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User user) {
+    public User updateUser(@Valid @RequestBody User user) {
         log.info("Получен PUT запрос на обновление пользователя");
         validationUser(user);
-        User u = users.get(user.getId());
-        u.setName(user.getName());
-        u.setLogin(user.getLogin());
-        u.setEmail(user.getEmail());
-        u.setBirthday(user.getBirthday());
-        return u;
+        if (users.containsKey(user.getId())) {
+            users.put(user.getId(), user);
+            log.debug("Обновлена информация о пользователя " + user.getName() + ", с id = " + user.getId());
+        } else if (user.getId() == null) {
+            user.setId(generateId++);
+            users.put(user.getId(), user);
+            log.debug("Добавлен новый пользователь " + user.getName());
+        } else {
+            log.debug("Не удалось обновить данные о пользователе");
+            throw new InvalidIdException("Неверный идентификатор пользователя");
+        }
+        return user;
     }
 
     @GetMapping
