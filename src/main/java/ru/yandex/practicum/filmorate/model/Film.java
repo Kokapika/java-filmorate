@@ -13,7 +13,7 @@ public class Film {
     @NotEmpty
     private String name;
     @NotEmpty
-    @Size(max=200)
+    @Size(max = 200)
     private String description;
     private LocalDate releaseDate;
     @Positive
