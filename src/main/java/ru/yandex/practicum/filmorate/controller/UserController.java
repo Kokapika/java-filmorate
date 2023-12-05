@@ -1,59 +1,74 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.InvalidIdException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
+import javax.validation.ValidationException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 @RestController
-@RequestMapping("/users")
+@RequiredArgsConstructor
 @Slf4j
+@RequestMapping("/users")
 public class UserController {
-    private final Map<Integer, User> users = new HashMap<>();
-    private int generateId = 1;
+    private final UserService userService;
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
         log.info("Получен POST запрос на добавление пользователя");
         validationUser(user);
-        user.setId(generateId);
-        if (user.getName() == null || user.getName().isEmpty() || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        users.put(generateId++, user);
-        return user;
+        return userService.getUserStorage().addUser(user);
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         log.info("Получен PUT запрос на обновление пользователя");
         validationUser(user);
-        if (users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
-            log.debug("Обновлена информация о пользователя " + user.getName() + ", с id = " + user.getId());
-        } else if (user.getId() == null) {
-            user.setId(generateId++);
-            users.put(user.getId(), user);
-            log.debug("Добавлен новый пользователь " + user.getName());
-        } else {
-            log.debug("Не удалось обновить данные о пользователе");
-            throw new InvalidIdException("Неверный идентификатор пользователя");
-        }
-        return user;
+        return userService.getUserStorage().updateUser(user);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriends(@PathVariable Integer id, @PathVariable Integer friendId) {
+        log.info("Получен PUT запрос на добавление в друзья");
+        userService.addFriends(id, friendId);
+        log.info("Пользователи с id " + id + " и " + friendId + " теперь друзья");
+    }
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable Integer id) {
+        log.info("Получен GET запрос на получение пользователя");
+        return userService.getUserStorage().getUserById(id);
     }
 
     @GetMapping
     public List<User> getUsers() {
         log.info("Получен GET запрос на получение пользователей");
-        return new ArrayList<>(users.values());
+        return userService.getUserStorage().getUsers();
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getAllFriends(@PathVariable Integer id) {
+        log.info("Получен GET запрос на получение списка друзей пользователя");
+        return userService.getAllFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Set<User> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
+        log.info("Получен GET запрос на получение общего списка друзей");
+        return userService.getCommonFriends(id, otherId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriends(@PathVariable Integer id, @PathVariable Integer friendId) {
+        log.info("Получен DELETE запрос на удаление из друзей");
+        userService.deleteFriends(id, friendId);
+        log.info("Пользователи с id " + id + " и " + friendId + " теперь не друзья");
     }
 
     private User validationUser(User user) {
