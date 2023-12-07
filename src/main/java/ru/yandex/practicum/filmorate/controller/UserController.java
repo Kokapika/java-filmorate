@@ -23,14 +23,14 @@ public class UserController {
     public User addUser(@Valid @RequestBody User user) {
         log.info("Получен POST запрос на добавление пользователя");
         validationUser(user);
-        return userService.getUserStorage().addUser(user);
+        return userService.addUser(user);
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         log.info("Получен PUT запрос на обновление пользователя");
         validationUser(user);
-        return userService.getUserStorage().updateUser(user);
+        return userService.updateUser(user);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -43,13 +43,13 @@ public class UserController {
     @GetMapping("/{id}")
     public User getUserById(@PathVariable Integer id) {
         log.info("Получен GET запрос на получение пользователя");
-        return userService.getUserStorage().getUserById(id);
+        return userService.getUserById(id);
     }
 
     @GetMapping
     public List<User> getUsers() {
         log.info("Получен GET запрос на получение пользователей");
-        return userService.getUserStorage().getUsers();
+        return userService.getUsers();
     }
 
     @GetMapping("/{id}/friends")

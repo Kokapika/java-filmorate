@@ -22,14 +22,14 @@ public class FilmController {
     public Film addFilm(@Valid @RequestBody Film film) {
         log.info("Получен POST запрос на добавление фильма");
         validationFilm(film);
-        return filmService.getFilmStorage().addFilm(film);
+        return filmService.addFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         log.info("Получен PUT запрос на обновление фильма");
         validationFilm(film);
-        return filmService.getFilmStorage().updateFilm(film);
+        return filmService.updateFilm(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -41,13 +41,13 @@ public class FilmController {
     @GetMapping
     public List<Film> getFilms() {
         log.info("Получен GET запрос на получение фильмов");
-        return filmService.getFilmStorage().getFilms();
+        return filmService.getFilms();
     }
 
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable Integer id) {
         log.info("Получен GET запрос на получение фильма");
-        return filmService.getFilmStorage().getFilmById(id);
+        return filmService.getFilmById(id);
     }
 
     @GetMapping("/popular")

@@ -3,9 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.InvalidIdException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -20,24 +18,32 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
-    public FilmStorage getFilmStorage() {
-        return filmStorage;
+    public Film addFilm(Film film) {
+        return filmStorage.addFilm(film);
+    }
+
+    public Film updateFilm(Film film) {
+        return filmStorage.updateFilm(film);
+    }
+
+    public List<Film> getFilms() {
+        return filmStorage.getFilms();
+    }
+
+    public Film getFilmById(Integer id) {
+        return filmStorage.getFilmById(id);
     }
 
     public void addLikeToFilm(Integer filmId, Integer userId) {
-        User user = userStorage.getUserById(userId);
         Film film = filmStorage.getFilmById(filmId);
+        userStorage.getUserById(userId);
         film.getLikes().add(userId);
         log.debug("Пользователь с id=" + userId + " поставил лайк фильму с id=" + filmId);
     }
 
     public void deleteLikeToFilm(Integer filmId, Integer userId) {
         Film film = filmStorage.getFilmById(filmId);
-        User user = userStorage.getUserById(userId);
-        if (user == null) {
-            log.debug("Пользователь с id=" + userId + " не найден");
-            throw new InvalidIdException("Неверный идентификатор пользователя");
-        }
+        userStorage.getUserById(userId);
         film.getLikes().remove(userId);
         log.debug("Пользователь с id=" + userId + " удалил лайк фильма с id=" + filmId);
     }
