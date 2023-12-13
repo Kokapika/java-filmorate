@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate.controllerTests;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.UserController;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 
@@ -12,10 +14,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class UserControllerValidationTest {
     UserController userController;
+    UserService userService;
+    UserStorage userStorage;
 
     @BeforeEach
     public void beforeEach() {
-        userController = new UserController();
+        userStorage = new InMemoryUserStorage();
+        userService = new UserService(userStorage);
+        userController = new UserController(userService);
     }
 
     @Test
@@ -35,14 +41,14 @@ public class UserControllerValidationTest {
 
     @Test
     public void emptyUserEmail() {
-        ValidationException exception = assertThrows(ValidationException.class, () -> {
+        javax.validation.ValidationException exception = assertThrows(javax.validation.ValidationException.class, () -> {
             User user = new User("Зверь", "Вася", "", LocalDate.of(2010, 10, 12));
             userController.addUser(user);
         });
 
         assertEquals("Почта не может быть пустой", exception.getMessage());
 
-        ValidationException e = assertThrows(ValidationException.class, () -> {
+        javax.validation.ValidationException e = assertThrows(javax.validation.ValidationException.class, () -> {
             User user = new User("Зверь", "Вася", "   ", LocalDate.of(2010, 10, 12));
             userController.addUser(user);
         });
@@ -52,7 +58,7 @@ public class UserControllerValidationTest {
 
     @Test
     public void emailWithoutDogSymbol() {
-        ValidationException exception = assertThrows(ValidationException.class, () -> {
+        javax.validation.ValidationException exception = assertThrows(javax.validation.ValidationException.class, () -> {
             User user = new User("Зверь", "Вася", "abrakatabra", LocalDate.of(2010, 10, 12));
             userController.addUser(user);
         });
@@ -62,14 +68,14 @@ public class UserControllerValidationTest {
 
     @Test
     public void emptyLoginUser() {
-        ValidationException exception = assertThrows(ValidationException.class, () -> {
+        javax.validation.ValidationException exception = assertThrows(javax.validation.ValidationException.class, () -> {
             User user = new User("", "Вася", "abc@yandex.ru", LocalDate.of(2010, 10, 12));
             userController.addUser(user);
         });
 
         assertEquals("Логин не может быть пустым и содержать пробелы", exception.getMessage());
 
-        ValidationException e = assertThrows(ValidationException.class, () -> {
+        javax.validation.ValidationException e = assertThrows(javax.validation.ValidationException.class, () -> {
             User user = new User("   ", "Вася", "abc@yandex.ru", LocalDate.of(2010, 10, 12));
             userController.addUser(user);
         });
@@ -92,7 +98,7 @@ public class UserControllerValidationTest {
 
     @Test
     public void birthdayInFuture() {
-        ValidationException exception = assertThrows(ValidationException.class, () -> {
+        javax.validation.ValidationException exception = assertThrows(javax.validation.ValidationException.class, () -> {
             User user = new User("Зверь", "Вася", "abc@yandex.ru", LocalDate.of(2030, 10, 12));
             userController.addUser(user);
         });
