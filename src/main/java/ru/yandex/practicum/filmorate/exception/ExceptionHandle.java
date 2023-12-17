@@ -15,10 +15,10 @@ public class ExceptionHandle {
         return Map.of("Валидация не пройдена", e.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler({InvalidIdException.class, EmptyResultException.class})
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    public Map<String, String> handleInvalidIdException(final InvalidIdException e) {
-        return Map.of("Неверный идентификатор", e.getMessage());
+    public Map<String, String> handleNotFoundException(final RuntimeException e) {
+        return Map.of("Запрашиваемые данные отсутствуют", e.getMessage());
     }
 
     @ExceptionHandler
