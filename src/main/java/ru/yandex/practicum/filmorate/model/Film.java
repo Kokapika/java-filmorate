@@ -17,16 +17,12 @@ public class Film {
     @NotEmpty
     @Size(max = 200)
     private String description;
+    @NotEmpty
     private LocalDate releaseDate;
     @Positive
+    @NotEmpty
     private Integer duration;
-    private Set<Integer> likes;
-
-    public Film(String name, String description, LocalDate releaseDate, int duration) {
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-        this.likes = new HashSet<>();
-    }
+    private Set<Genre> genres = new HashSet<>();
+    @NotEmpty
+    private Mpa mpa;
 }
