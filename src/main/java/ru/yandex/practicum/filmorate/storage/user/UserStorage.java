@@ -12,4 +12,6 @@ public interface UserStorage {
     List<User> getUsers();
 
     User getUserById(Integer id);
+
+    boolean containsUser(Integer id);
 }
