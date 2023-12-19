@@ -1,58 +1,56 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.genre.FilmGenreStorage;
+import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
-@Slf4j
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final FilmGenreStorage filmGenreStorage;
+    private final LikeStorage likesStorage;
+
+    @Autowired
+    public FilmService(@Qualifier("FilmDbStorage") FilmStorage filmStorage,
+                       FilmGenreStorage filmGenreStorage,
+                       LikeStorage likesStorage) {
+        this.filmStorage = filmStorage;
+        this.filmGenreStorage = filmGenreStorage;
+        this.likesStorage = likesStorage;
+    }
 
     public Film addFilm(Film film) {
-        return filmStorage.addFilm(film);
+        Integer id = filmStorage.addFilm(film);
+        filmGenreStorage.addGenres(id, film.getGenres());
+        return getFilmById(id);
     }
 
     public Film updateFilm(Film film) {
-        return filmStorage.updateFilm(film);
+        filmStorage.updateFilm(film);
+        filmGenreStorage.updateGenres(film.getId(), film.getGenres());
+        return getFilmById(film.getId());
     }
 
     public List<Film> getFilms() {
-        return filmStorage.getFilms();
+        return filmStorage.getFilms().stream()
+                .map(film -> film.toBuilder()
+                        .likes(likesStorage.getLikes(film.getId()))
+                        .genres(filmGenreStorage.getGenres(film.getId()))
+                        .build())
+                .collect(Collectors.toList());
     }
 
     public Film getFilmById(Integer id) {
-        return filmStorage.getFilmById(id);
-    }
-
-    public void addLikeToFilm(Integer filmId, Integer userId) {
-        Film film = filmStorage.getFilmById(filmId);
-        userStorage.getUserById(userId);
-        film.getLikes().add(userId);
-        log.debug("Пользователь с id=" + userId + " поставил лайк фильму с id=" + filmId);
-    }
-
-    public void deleteLikeToFilm(Integer filmId, Integer userId) {
-        Film film = filmStorage.getFilmById(filmId);
-        userStorage.getUserById(userId);
-        film.getLikes().remove(userId);
-        log.debug("Пользователь с id=" + userId + " удалил лайк фильма с id=" + filmId);
-    }
-
-    public List<Film> getPopularFilms(Integer count) {
-        List<Film> films = filmStorage.getFilms();
-        return films.stream()
-                .sorted(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getFilmById(id).toBuilder()
+                .likes(likesStorage.getLikes(id))
+                .genres(filmGenreStorage.getGenres(id))
+                .build();
     }
 }

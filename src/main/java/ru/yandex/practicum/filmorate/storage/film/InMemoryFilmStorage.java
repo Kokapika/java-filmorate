@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.InvalidIdException;
+import ru.yandex.practicum.filmorate.exception.not.found.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.ArrayList;
@@ -17,11 +17,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     private int generateId = 1;
 
     @Override
-    public Film addFilm(Film film) {
+    public Integer addFilm(Film film) {
         film.setId(generateId);
         films.put(generateId++, film);
         log.debug("Добавлен новый фильм " + film.getName());
-        return film;
+        return film.getId();
     }
 
     @Override
@@ -35,7 +35,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             log.debug("Добавлен новый фильм " + film.getName());
         } else {
             log.debug("Не удалось обновить данные о фильме");
-            throw new InvalidIdException("Неверный идентификатор фильма");
+            throw new NotFoundException("Неверный идентификатор фильма");
         }
         return film;
     }
@@ -45,7 +45,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         Film film = films.get(id);
         if (film == null) {
             log.debug("Фильм с id=" + id + " не найден");
-            throw new InvalidIdException("Неверный идентификатор фильма");
+            throw new NotFoundException("Неверный идентификатор фильма");
         }
         return film;
     }

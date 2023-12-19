@@ -2,10 +2,13 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.InvalidIdException;
+import ru.yandex.practicum.filmorate.exception.not.found.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @Slf4j
@@ -34,7 +37,7 @@ public class InMemoryUserStorage implements UserStorage {
             log.debug("Добавлен новый пользователь " + user.getName());
         } else {
             log.debug("Не удалось обновить данные о пользователе");
-            throw new InvalidIdException("Неверный идентификатор пользователя");
+            throw new NotFoundException("Неверный идентификатор пользователя");
         }
         return user;
     }
@@ -44,7 +47,7 @@ public class InMemoryUserStorage implements UserStorage {
         User user = users.get(id);
         if (user == null) {
             log.debug("Пользователь с id=" + id + " не найден");
-            throw new InvalidIdException("Неверный идентификатор пользователя");
+            throw new NotFoundException("Неверный идентификатор пользователя");
         }
         return user;
     }
@@ -52,5 +55,10 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public List<User> getUsers() {
         return new ArrayList<>(users.values());
+    }
+
+    @Override
+    public void deleteUser(Integer id) {
+        users.remove(id);
     }
 }
