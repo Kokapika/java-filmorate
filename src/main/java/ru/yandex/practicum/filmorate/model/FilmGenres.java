@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class Mpa {
-    private Integer id;
-    private String name;
+@AllArgsConstructor
+public class FilmGenres {
+    private Integer filmId;
+    private Integer genreId;
 }

@@ -1,18 +1,20 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
-@Builder(toBuilder = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class Film {
     private Integer id;
     @NotBlank
@@ -27,14 +29,30 @@ public class Film {
     private Integer duration;
     @NotNull
     private Mpa mpa;
-    private LinkedHashSet<Genre> genres;
-    private Set<Integer> likes;
+    private Integer rate;
+    private List<Genre> genres = new ArrayList<>();
 
-    public void addLike(Integer userId) {
-        this.likes.add(userId);
+    public Film(int id, String name, LocalDate releaseDate, String description, int duration, int rate, Mpa mpa) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+        this.mpa = mpa;
+        this.rate = rate;
     }
 
-    public void deleteLike(Integer userId) {
-        this.likes.remove(userId);
+    public Film(String name, String description, LocalDate releaseDate, Integer duration, Mpa mpa, Integer rate) {
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+        this.mpa = mpa;
+        this.rate = rate;
+    }
+
+    public void addGenreToFilm(Genre genre) {
+        genres.add(genre);
     }
 }
+

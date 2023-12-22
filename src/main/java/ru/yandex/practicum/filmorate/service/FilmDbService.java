@@ -5,43 +5,58 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.FilmGenreStorage;
-import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+
 public class FilmDbService {
     private final FilmStorage filmStorage;
     private final FilmGenreStorage filmGenreStorage;
-    private final LikeStorage likesStorage;
+    private final MpaStorage mpaStorage;
 
     public Film addFilm(Film film) {
-        Integer id = filmStorage.addFilm(film);
-        filmGenreStorage.addGenres(id, film.getGenres());
-        return getFilmById(id);
+        Film newFilm = filmStorage.createFilm(film);
+        if (film.getGenres() != null) {
+            filmGenreStorage.updateGenres(newFilm.getId(), film.getGenres());
+        }
+        newFilm.setGenres(filmGenreStorage.getGenresByFilmId(newFilm.getId()));
+        newFilm.setMpa(mpaStorage.getMpaById(newFilm.getMpa().getId()));
+        return newFilm;
     }
 
     public Film updateFilm(Film film) {
-        filmStorage.updateFilm(film);
-        filmGenreStorage.updateGenres(film.getId(), film.getGenres());
-        return getFilmById(film.getId());
+        Film updateFilm = filmStorage.updateFilm(film);
+        filmGenreStorage.deleteGenresByFilmId(film.getId());
+        if (film.getGenres() != null) {
+            filmGenreStorage.updateGenres(film.getId(), film.getGenres());
+        }
+        updateFilm.setGenres(filmGenreStorage.getGenresByFilmId(film.getId()));
+        updateFilm.setMpa(mpaStorage.getMpaById(updateFilm.getMpa().getId()));
+        return updateFilm;
     }
 
     public List<Film> getFilms() {
-        return filmStorage.getFilms().stream()
-                .map(film -> film.toBuilder()
-                        .likes(likesStorage.getLikes(film.getId()))
-                        .genres(filmGenreStorage.getGenres(film.getId()))
-                        .build())
-                .collect(Collectors.toList());
+        return filmStorage.getAllFilms();
+    }
+
+    public void deleteFilms() {
+        filmStorage.deleteAllFilms();
     }
 
     public Film getFilmById(Integer id) {
-        return filmStorage.getFilmById(id).toBuilder()
-                .likes(likesStorage.getLikes(id))
-                .genres(filmGenreStorage.getGenres(id))
-                .build();
+        Film film = filmStorage.getFilmById(id);
+        film.setGenres(filmGenreStorage.getGenresByFilmId(film.getId()));
+        return film;
+    }
+
+    public int deleteFilmById(int id) {
+        return filmStorage.deleteFilmById(id);
+    }
+
+    public List<Film> getPopularFilms(Integer count) {
+        return filmStorage.getPopularFilms(count);
     }
 }

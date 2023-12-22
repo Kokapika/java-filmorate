@@ -2,33 +2,33 @@ package ru.yandex.practicum.filmorate.storage.mpa;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.not.found.MpaNotFoundException;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Component
+@Repository
 @RequiredArgsConstructor
 public class MpaDbStorage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public List<Mpa> getAllMpa() {
-        String sql = "SELECT * FROM mpa_ratings";
-        return jdbcTemplate.query(sql, (rs, rowNum) ->
-                        Mpa.valueOf(rs.getString("name")))
-                .stream().sorted(Enum::compareTo).collect(Collectors.toList());
+    public Mpa getMpaById(int id) {
+        String sql = "SELECT * FROM mpa_ratings WHERE mpa_rating_id = ?";
+        return jdbcTemplate.queryForObject(sql, this::mpaMapper, id);
     }
 
     @Override
-    public Mpa getMpaById(Integer id) {
-        String sql = "SELECT * FROM mpa_ratings WHERE mpa_rating_id = ?";
-        SqlRowSet mpaRow = jdbcTemplate.queryForRowSet(sql, id);
-        if (!mpaRow.next())
-            throw new MpaNotFoundException(String.format("Рейтинга MPA с id %d не существует", id));
-        return Mpa.valueOf(mpaRow.getString("name"));
+    public List<Mpa> getAllMpa() {
+        String sql = "SELECT * FROM mpa_ratings";
+        return jdbcTemplate.query(sql, this::mpaMapper);
+    }
+
+    private Mpa mpaMapper(ResultSet rs, int rowNum) throws SQLException {
+        int id = rs.getInt("mpa_rating_id");
+        String mpaName = rs.getString("mpa_name");
+        return new Mpa(id, mpaName);
     }
 }

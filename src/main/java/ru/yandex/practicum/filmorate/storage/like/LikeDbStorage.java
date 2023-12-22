@@ -3,10 +3,11 @@ package ru.yandex.practicum.filmorate.storage.like;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.FilmLikes;
 
-import java.util.HashSet;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -14,30 +15,38 @@ public class LikeDbStorage implements LikeStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void addLike(Integer filmId, Integer userId) {
+    public int addLike(int filmId, int userId) {
         String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
-        jdbcTemplate.update(sql, filmId, userId);
+        updateRate(filmId);
+        return jdbcTemplate.update(sql, filmId, userId);
     }
 
     @Override
-    public void deleteLike(Integer filmId, Integer userId) {
+    public int deleteLike(int filmId, int userId) {
         String sql = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
-        jdbcTemplate.update(sql, filmId, userId);
+        updateRate(filmId);
+        return jdbcTemplate.update(sql, filmId, userId);
     }
 
     @Override
-    public List<Integer> getPopularFilms(Integer count) {
-        String sql = "SELECT * FROM films f " +
-                "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
-                "GROUP BY f.film_id " +
-                "ORDER BY COUNT(fl.user_id) DESC " +
-                "LIMIT ?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("films.film_id"), count);
+    public List<FilmLikes> getAllLikes() {
+        String sql = "SELECT * FROM film_likes";
+        return jdbcTemplate.query(sql, this::likeMapper);
     }
 
-    @Override
-    public Set<Integer> getLikes(Integer filmId) {
-        String sql = "SELECT * FROM film_likes WHERE film_id = ?";
-        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("user_id"), filmId));
+    private void updateRate(int filmId) {
+        jdbcTemplate.update("UPDATE films AS f " +
+                "SET rate = (" +
+                "SELECT COUNT(fl.user_id) " +
+                "FROM film_likes AS fl " +
+                "WHERE fl.film_id = f.film_id" +
+                ") " +
+                "WHERE film_id = ?", filmId);
+    }
+
+    private FilmLikes likeMapper(ResultSet rs, int rowNum) throws SQLException {
+        int filmId = rs.getInt("film_id");
+        int userId = rs.getInt("user_id");
+        return new FilmLikes(filmId, userId);
     }
 }

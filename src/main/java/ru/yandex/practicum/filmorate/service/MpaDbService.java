@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
@@ -17,6 +18,9 @@ public class MpaDbService {
     }
 
     public Mpa getMpaById(Integer id) {
+        if (id < 1 || id > 5) {
+            throw new NotFoundException("Некорректно введен ID рейтинга");
+        }
         return mpaStorage.getMpaById(id);
     }
 }

@@ -1,244 +1,165 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.controller.UserController;
-import ru.yandex.practicum.filmorate.exception.not.found.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class UserDbTest {
-    private Validator validator;
-    private final UserController controller;
 
-    @BeforeEach
-    public void beforeEach() {
-        validator = Validation.buildDefaultValidatorFactory().getValidator();
-    }
+    private final UserStorage userStorage;
 
     @Test
     void createUser() {
-        User user = User.builder().email("abrakatabra@mail.ru").login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).friends(new HashMap<>()).build();
-        controller.addUser(user);
+        User testUser = new User("abububugaga@mail.ru", "Koka", "Kokapika",
+                LocalDate.of(1999, 1, 1));
 
-        Assertions.assertEquals(1, controller.getUsers().size(), "Количество пользователей не совпадает");
-        Assertions.assertEquals(user.getEmail(), controller.getUsers().get(0).getEmail(),
-                "Почты не совпадают");
-        Assertions.assertEquals(user.getLogin(), controller.getUsers().get(0).getLogin(),
-                "Логины не совпадают");
-        Assertions.assertEquals(user.getName(), controller.getUsers().get(0).getName(),
-                "Имена не совпадают");
-        Assertions.assertEquals(user.getBirthday(), controller.getUsers().get(0).getBirthday(),
-                "Дни рождения не совпадают");
-        Assertions.assertEquals(user.getFriends(), controller.getUsers().get(0).getFriends(),
-                "Список друзей не совпадает");
-    }
+        userStorage.createUser(testUser);
 
-    @Test
-    void createUserWithBlankEmailOrWithEmailWithoutAtSign() {
-        User user = User.builder().email(" ").login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).build();
-        User user2 = User.builder().email("babayaga.ru").login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).build();
-
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        Assertions.assertFalse(violations.isEmpty());
-        Set<ConstraintViolation<User>> violations2 = validator.validate(user2);
-        Assertions.assertFalse(violations2.isEmpty());
-    }
-
-    @Test
-    void createUserWithBlankLogin() {
-        User user = User.builder().email("abrakatabra@mail.ru").login(" ").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).friends(new HashMap<>()).build();
-
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        Assertions.assertFalse(violations.isEmpty());
-    }
-
-    @Test
-    void createUserWithBlankName() {
-        User user = User.builder().email("abrakatabra@mail.ru").login("BabaYaga").name(" ")
-                .birthday(LocalDate.of(1888, 1, 1)).friends(new HashMap<>()).build();
-        controller.addUser(user);
-
-        Assertions.assertEquals(1, controller.getUsers().size(), "Неверное количество пользователей");
-        Assertions.assertEquals(user.getLogin(), controller.getUsers().get(0).getName(),
-                "Имя пользователя не равно логину");
-    }
-
-    @Test
-    void createUserWithBirthdayInFuture() {
-        User user = User.builder().email("abrakatabra@mail.ru").login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(2222, 1, 1)).friends(new HashMap<>()).build();
-
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        Assertions.assertFalse(violations.isEmpty());
-    }
-
-    @Test
-    void createUserWithEmptyUserOrWithoutLoginOrEmailOrNameOrBirthday() {
-        User userEmpty = User.builder().build();
-        User userWithoutLogin = User.builder().email("abrakatabra@mail.ru").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).friends(new HashMap<>()).build();
-        User userWithoutEmail = User.builder().login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).friends(new HashMap<>()).build();
-        User userWithoutName = User.builder().email("abrakatabra@mail.ru").login("BabaYaga")
-                .birthday(LocalDate.of(1888, 1, 1)).friends(new HashMap<>()).build();
-        User userWithoutBirthday = User.builder().email("abrakatabra@mail.ru").login("BabaYaga").name("Yaga")
-                .friends(new HashMap<>()).build();
-
-        Set<ConstraintViolation<User>> violations = validator.validate(userEmpty);
-        Assertions.assertFalse(violations.isEmpty());
-        Set<ConstraintViolation<User>> violations2 = validator.validate(userWithoutLogin);
-        Assertions.assertFalse(violations2.isEmpty());
-        Set<ConstraintViolation<User>> violations3 = validator.validate(userWithoutEmail);
-        Assertions.assertFalse(violations3.isEmpty());
-        controller.addUser(userWithoutName);
-        Assertions.assertEquals(userWithoutName.getLogin(), controller.getUsers().get(0).getName());
-        Set<ConstraintViolation<User>> violations4 = validator.validate(userWithoutBirthday);
-        Assertions.assertFalse(violations4.isEmpty());
+        assertEquals("Koka", testUser.getLogin());
+        assertEquals(1, testUser.getId());
+        assertEquals(1, userStorage.getAllUsers().size());
     }
 
     @Test
     void updateUser() {
-        User user = User.builder().email("abrakatabra@mail.ru").login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).friends(new HashMap<>()).build();
-        User addedUser = controller.addUser(user);
+        User testUser = new User("abububugaga@mail.ru", "Koka", "Kokapika",
+                LocalDate.of(1999, 1, 1));
 
-        User updatedUser = user.toBuilder().id(addedUser.getId()).email("sezam@yandex.ru").login("mag")
-                .name("Mag").birthday(LocalDate.of(1999, 12, 12)).friends(new HashMap<>())
-                .build();
-        controller.updateUser(updatedUser);
+        userStorage.createUser(testUser);
 
-        Assertions.assertEquals(1, controller.getUsers().size(), "Количество пользователей не совпадает");
-        Assertions.assertEquals(updatedUser.getEmail(), controller.getUsers().get(0).getEmail(),
-                "Почты не совпадают");
-        Assertions.assertEquals(updatedUser.getLogin(), controller.getUsers().get(0).getLogin(),
-                "Логины не совпадают");
-        Assertions.assertEquals(updatedUser.getName(), controller.getUsers().get(0).getName(),
-                "Имена не совпадают");
-        Assertions.assertEquals(updatedUser.getBirthday(), controller.getUsers().get(0).getBirthday(),
-                "Дни рождения не совпадают");
-        Assertions.assertEquals(updatedUser.getFriends(), controller.getUsers().get(0).getFriends(),
-                "Список друзей не совпадает");
+        User updateUser = new User(1, "abuga@mail.ru", "Kapika", "Kokapika",
+                LocalDate.of(1999, 1, 1));
+
+        userStorage.updateUser(updateUser);
+
+        assertEquals("Kapika", updateUser.getLogin());
     }
 
     @Test
-    void updateUserWithBlankEmailOrWithEmailWithoutAtSign() {
-        User user = User.builder().email("abrakatabra@mail.ru").login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).friends(new HashMap<>()).build();
-        controller.addUser(user);
+    void deleteUser() {
+        User testUser = new User("abububugaga@mail.ru", "Koka", "Kokapika",
+                LocalDate.of(1999, 1, 1));
 
-        User updatedUser = user.toBuilder().email(" ").login("mag").name("Mag")
-                .birthday(LocalDate.of(1999, 12, 12)).build();
-        User updatedUser2 = user.toBuilder().email("sezam.ru").login("mag").name("Mag")
-                .birthday(LocalDate.of(2004, 12, 12)).build();
+        userStorage.createUser(testUser);
 
-        Set<ConstraintViolation<User>> violations = validator.validate(updatedUser);
-        Assertions.assertFalse(violations.isEmpty());
-        Set<ConstraintViolation<User>> violations2 = validator.validate(updatedUser2);
-        Assertions.assertFalse(violations2.isEmpty());
+        assertEquals(1, userStorage.getAllUsers().size());
+
+        userStorage.deleteUserById(1);
+
+        assertEquals(0, userStorage.getAllUsers().size());
     }
 
     @Test
-    void updateUserWithBlankLogin() {
-        User user = User.builder().email("abrakatabra@mail.ru").login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).friends(new HashMap<>()).build();
-        controller.addUser(user);
+    void findAllUsers() {
+        User testUser = new User("abububugaga@mail.ru", "Koka", "Kokapika",
+                LocalDate.of(1999, 1, 1));
 
-        User updatedUser = user.toBuilder().email("sezam@yandex.ru").login(" ").name("Mag")
-                .birthday(LocalDate.of(1999, 12, 12)).build();
+        userStorage.createUser(testUser);
 
-        Set<ConstraintViolation<User>> violations = validator.validate(updatedUser);
-        Assertions.assertFalse(violations.isEmpty());
+        User testUser2 = new User("abuga@mail.ru", "Kapika", "Kokapika",
+                LocalDate.of(1999, 1, 1));
+
+        userStorage.createUser(testUser2);
+
+        assertEquals(2, userStorage.getAllUsers().size());
     }
 
     @Test
-    void updateUserWithBlankName() {
-        User user = User.builder().email("abrakatabra@mail.ru").login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).friends(new HashMap<>()).build();
-        User addedUser = controller.addUser(user);
+    void getUserById() {
+        User testUser = new User("abububugaga@mail.ru", "Koka", "Kokapika",
+                LocalDate.of(1999, 1, 1));
 
-        User updatedUser = user.toBuilder().id(addedUser.getId()).email("sezam@yandex.ru").login("mag")
-                .name(" ").birthday(LocalDate.of(2004, 12, 12)).build();
-        controller.updateUser(updatedUser);
+        userStorage.createUser(testUser);
 
-        Assertions.assertEquals(1, controller.getUsers().size(), "Количество пользователей не совпадает");
-        Assertions.assertEquals(updatedUser.getLogin(), controller.getUsers().get(0).getName(),
-                "Имя пользователя не равно логину");
+        Optional<User> userOptional = Optional.ofNullable(userStorage.getUserById(1));
+
+        assertThat(userOptional)
+                .isPresent()
+                .hasValueSatisfying(user ->
+                        assertThat(user).hasFieldOrPropertyWithValue("id", 1)
+                );
     }
 
     @Test
-    void updateUserWithBirthdayInFuture() {
-        User user = User.builder().email("abrakatabra@mail.ru").login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).friends(new HashMap<>()).build();
-        controller.addUser(user);
+    void getFriends() {
+        User testUser = new User("abububugaga@mail.ru", "Koka", "Kokapika",
+                LocalDate.of(1999, 1, 1));
+        userStorage.createUser(testUser);
+        User testUser2 = new User("abuga@mail.ru", "Kapika", "Kokapika",
+                LocalDate.of(2000, 1, 1));
+        userStorage.createUser(testUser2);
+        User testUser3 = new User("gaga@mail.ru", "Pika", "Kokapi",
+                LocalDate.of(2001, 1, 1));
+        userStorage.createUser(testUser3);
 
-        User updatedUser = User.builder().email("abrakatabra@mail.ru").login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(2222, 1, 1)).friends(new HashMap<>()).build();
+        userStorage.addFriend(1, 3);
+        userStorage.addFriend(1, 2);
+        userStorage.addFriend(2, 1);
+        userStorage.addFriend(2, 3);
+        userStorage.addFriend(3, 2);
+        userStorage.addFriend(3, 1);
 
-        Set<ConstraintViolation<User>> violations = validator.validate(updatedUser);
-        Assertions.assertFalse(violations.isEmpty());
-    }
-
-
-    @Test
-    void updateUserWithNonexistentId() {
-        User user = User.builder().email("abrakatabra@mail.ru").login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).friends(new HashMap<>()).build();
-        controller.addUser(user);
-
-        User updatedUser = user.toBuilder().id(9999).build();
-
-        UserNotFoundException e = Assertions.assertThrows(UserNotFoundException.class,
-                () -> controller.updateUser(updatedUser));
-        Assertions.assertEquals("Пользователя с id " + updatedUser.getId()
-                + " не существует.", e.getMessage(), "Сообщения об ошибке не совпадают.");
+        assertEquals(2, userStorage.getFriendsById(1).size());
     }
 
     @Test
-    void updateUserWithEmptyUserOrWithoutLoginOrEmailOrNameOrBirthday() {
-        User user = User.builder().email("abrakatabra@mail.ru").login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).friends(new HashMap<>()).build();
-        User addedUser = controller.addUser(user);
+    void deleteFriend() {
+        User testUser = new User("abububugaga@mail.ru", "Koka", "Kokapika",
+                LocalDate.of(1999, 1, 1));
+        userStorage.createUser(testUser);
+        User testUser2 = new User("abuga@mail.ru", "Kapika", "Kokapika",
+                LocalDate.of(2000, 1, 1));
+        userStorage.createUser(testUser2);
+        User testUser3 = new User("gaga@mail.ru", "Pika", "Kokapi",
+                LocalDate.of(2001, 1, 1));
+        userStorage.createUser(testUser3);
 
-        User updatedUserEmpty = User.builder().id(addedUser.getId()).build();
-        User updatedUserWithoutLogin = User.builder().id(addedUser.getId()).email("abrakatabra@mail.ru").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).build();
-        User updatedUserWithoutEmail = User.builder().id(addedUser.getId()).login("BabaYaga").name("Yaga")
-                .birthday(LocalDate.of(1888, 1, 1)).build();
-        User updatedUserWithoutName = User.builder().id(addedUser.getId()).email("abrakatabra@mail.ru").login("BabaYaga")
-                .birthday(LocalDate.of(1888, 1, 1)).build();
-        User updatedUserWithoutBirthday = User.builder().id(addedUser.getId()).email("abrakatabra@mail.ru").login("BabaYaga")
-                .name("Yaga").build();
+        userStorage.addFriend(1, 3);
+        userStorage.addFriend(1, 2);
+        userStorage.addFriend(2, 1);
+        userStorage.addFriend(2, 3);
+        userStorage.addFriend(3, 2);
+        userStorage.addFriend(3, 1);
 
-        Set<ConstraintViolation<User>> violations = validator.validate(updatedUserEmpty);
-        Assertions.assertFalse(violations.isEmpty());
-        Set<ConstraintViolation<User>> violations2 = validator.validate(updatedUserWithoutLogin);
-        Assertions.assertFalse(violations2.isEmpty());
-        Set<ConstraintViolation<User>> violations3 = validator.validate(updatedUserWithoutEmail);
-        Assertions.assertFalse(violations3.isEmpty());
-        controller.updateUser(updatedUserWithoutName);
-        Assertions.assertEquals(updatedUserWithoutName.getLogin(), controller.getUsers().get(0).getName());
-        Set<ConstraintViolation<User>> violations4 = validator.validate(updatedUserWithoutBirthday);
-        Assertions.assertFalse(violations4.isEmpty());
+        userStorage.deleteFriend(1, 3);
+        assertEquals(1, userStorage.getFriendsById(1).size());
+    }
+
+    @Test
+    void getCommonFriends() {
+        User testUser = new User("abububugaga@mail.ru", "Koka", "Kokapika",
+                LocalDate.of(1999, 1, 1));
+        userStorage.createUser(testUser);
+        User testUser2 = new User("abuga@mail.ru", "Kapika", "Kokapika",
+                LocalDate.of(2000, 1, 1));
+        userStorage.createUser(testUser2);
+        User testUser3 = new User("gaga@mail.ru", "Pika", "Kokapi",
+                LocalDate.of(2001, 1, 1));
+        userStorage.createUser(testUser3);
+
+        userStorage.addFriend(1, 3);
+        userStorage.addFriend(1, 2);
+        userStorage.addFriend(2, 1);
+        userStorage.addFriend(2, 3);
+        userStorage.addFriend(3, 2);
+        userStorage.addFriend(3, 1);
+
+        assertEquals(1, userStorage.getCommonFriends(1, 3).size());
+        assertEquals(2, userStorage.getCommonFriends(1, 3).get(0).getId());
     }
 }

@@ -14,14 +14,13 @@ import java.util.List;
 public class UserController {
     private final UserDbService userDbService;
 
+    protected void clearUsers() {
+        userDbService.deleteUsers();
+    }
+
     @GetMapping
     public List<User> getUsers() {
         return userDbService.getUsers();
-    }
-
-    @GetMapping("/{id}")
-    public User getUserById(@PathVariable Integer id) {
-        return userDbService.getUserById(id);
     }
 
     @PostMapping
@@ -30,15 +29,40 @@ public class UserController {
         return userDbService.addUser(user);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Integer id) {
-        userDbService.deleteUser(id);
-    }
-
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         checkUser(user);
         return userDbService.updateUser(user);
+    }
+
+    @DeleteMapping("/{id}")
+    public int deleteUser(@PathVariable("id") int id) {
+        return userDbService.deleteUser(id);
+    }
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable("id") int id) {
+        return userDbService.getUserById(id);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable("id") Integer id, @PathVariable("friendId") Integer friendId) {
+        userDbService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable("id") Integer id, @PathVariable("friendId") Integer friendId) {
+        userDbService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable("id") Integer id) {
+        return userDbService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable("id") Integer id, @PathVariable("otherId") Integer otherId) {
+        return userDbService.getCommonFriends(id, otherId);
     }
 
     private void checkUser(User user) {

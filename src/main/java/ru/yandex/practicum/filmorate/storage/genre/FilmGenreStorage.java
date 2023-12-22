@@ -2,12 +2,16 @@ package ru.yandex.practicum.filmorate.storage.genre;
 
 import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.util.LinkedHashSet;
+import java.util.List;
 
 public interface FilmGenreStorage {
-    void addGenres(Integer filmId, LinkedHashSet<Genre> genres);
+    Genre getGenreById(int id);
 
-    void updateGenres(Integer filmId, LinkedHashSet<Genre> genres);
+    List<Genre> getAllGenres();
 
-    LinkedHashSet<Genre> getGenres(Integer filmId);
+    List<Genre> getGenresByFilmId(int filmId);
+
+    void updateGenres(int filmId, List<Genre> genres);
+
+    void deleteGenresByFilmId(int filmId);
 }
