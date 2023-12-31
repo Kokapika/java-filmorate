@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.user_event.UserEvent;
 import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.UserDbService;
 
@@ -71,6 +72,11 @@ public class UserController {
     @GetMapping("/{id}/recommendations")
     public List<Film> getRecommendations(@PathVariable("id") Integer id) {
         return recommendationsService.getRecommendations(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<UserEvent> getUserEvents(@PathVariable("id") Integer id) {
+        return userDbService.getUserEvents(id);
     }
 
     private void checkUser(User user) {

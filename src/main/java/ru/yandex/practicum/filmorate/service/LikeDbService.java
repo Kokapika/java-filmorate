@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmLikes;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.user_event.EventType;
+import ru.yandex.practicum.filmorate.model.user_event.OperationType;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -17,11 +19,13 @@ public class LikeDbService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final LikeStorage likesStorage;
+    private final UserEventDbService userEventDbService;
 
     public Film addLike(int filmId, int userId) {
         Film film = filmStorage.getFilmById(filmId);
         User user = userStorage.getUserById(userId);
         likesStorage.addLike(filmId, userId);
+        userEventDbService.addEvent(EventType.LIKE, userId, filmId, OperationType.ADD);
         return film;
     }
 
@@ -29,6 +33,7 @@ public class LikeDbService {
         Film film = filmStorage.getFilmById(filmId);
         User user = userStorage.getUserById(userId);
         likesStorage.deleteLike(filmId, userId);
+        userEventDbService.addEvent(EventType.LIKE, userId, filmId, OperationType.REMOVE);
         return film;
     }
 
