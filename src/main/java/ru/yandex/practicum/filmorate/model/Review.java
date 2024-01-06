@@ -18,7 +18,6 @@ public class Review {
     private Integer reviewId;
 
     @NotBlank(message = "Review description cannot be empty")
-    @NotNull(message = "Review description cannot be empty")
     private String content;
 
     @NotNull(message = "Review opinion cannot be empty")

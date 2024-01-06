@@ -15,17 +15,17 @@ import java.util.List;
 
 @Service
 public class ReviewDbService {
+    public static final int DOWN_RATING = -1;
+    public static final int UP_RATING = 1;
     private final ReviewStorage reviewStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private final UserEventDbService userEventDbService;
 
     @Autowired
-    public ReviewDbService(ReviewStorage reviewStorage, FilmStorage filmStorage, UserStorage userStorage, UserEventDbService userEventDbService) {
+    public ReviewDbService(ReviewStorage reviewStorage, FilmStorage filmStorage, UserStorage userStorage) {
         this.reviewStorage = reviewStorage;
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
-        this.userEventDbService = userEventDbService;
     }
 
     public Review createReview(Review review) {
@@ -64,22 +64,18 @@ public class ReviewDbService {
         if (filmId == null) {
             return reviewStorage.getAllReviews();
         }
-        return reviewStorage.getAllReviewsByFilmId(filmId, count);
+        return reviewStorage.getSortedReviews(filmId, count);
     }
 
-    public Integer likeReview(int idReview, int idUser) {
-        return reviewStorage.likeReview(idReview, idUser);
+    public Integer likeReview(int reviewId, int userId) {
+        return reviewStorage.changeReviewEstimation(reviewId, userId, UP_RATING);
     }
 
-    public Integer dislikeReview(int idReview, int idUser) {
-        return reviewStorage.dislikeReview(idReview, idUser);
+    public Integer dislikeReview(int reviewId, int userId) {
+        return reviewStorage.changeReviewEstimation(reviewId, userId, DOWN_RATING);
     }
 
-    public Integer removeLikeReview(int idReview, int idUser) {
-        return reviewStorage.removeLikeReview(idReview, idUser);
-    }
-
-    public Integer removeDislikeReview(int idReview, int idUser) {
-        return reviewStorage.removeDislikeReview(idReview, idUser);
+    public Integer removeReviewEstimation(int reviewId, int userId) {
+        return reviewStorage.removeReviewEstimation(reviewId, userId);
     }
 }

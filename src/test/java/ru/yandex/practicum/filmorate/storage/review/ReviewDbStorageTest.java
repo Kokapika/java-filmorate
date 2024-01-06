@@ -5,19 +5,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.like.LikeDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -26,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -121,7 +115,7 @@ class ReviewDbStorageTest {
     void getAllReviewsByFilmId() {
         Review review = reviewStorage.createReview(badReview);
 
-        List<Review> allReviewsByFilmId = reviewStorage.getAllReviewsByFilmId(1,10);
+        List<Review> allReviewsByFilmId = reviewStorage.getSortedReviews(1, 10);
 
         assertThat(allReviewsByFilmId.get(0)).isEqualTo(review);
     }
@@ -139,7 +133,7 @@ class ReviewDbStorageTest {
     void likeReview() {
         Review review = reviewStorage.createReview(badReview);
 
-        Integer i = reviewStorage.likeReview(1, 1);
+        Integer i = reviewStorage.changeReviewEstimation(1, 1, 1);
 
         Optional<Review> reviewById = reviewStorage.getReviewById(review.getReviewId());
 
@@ -150,7 +144,7 @@ class ReviewDbStorageTest {
     void dislikeReview() {
         Review review = reviewStorage.createReview(badReview);
 
-        Integer i = reviewStorage.dislikeReview(1, 1);
+        Integer i = reviewStorage.changeReviewEstimation(1, 1, -1);
 
         Optional<Review> reviewById = reviewStorage.getReviewById(review.getReviewId());
 
@@ -160,11 +154,11 @@ class ReviewDbStorageTest {
     @Test
     void removeLikeReview() {
         Review review = reviewStorage.createReview(badReview);
-        Integer i = reviewStorage.likeReview(1, 1);
+        Integer i = reviewStorage.changeReviewEstimation(1, 1, 1);
         Optional<Review> reviewById = reviewStorage.getReviewById(review.getReviewId());
         assertThat(reviewById.get().getUseful()).isEqualTo(1);
 
-        reviewStorage.removeLikeReview(1,1);
+        reviewStorage.removeReviewEstimation(1, 1);
         Optional<Review> reviewAfterRemoveLike = reviewStorage.getReviewById(review.getReviewId());
 
         assertThat(reviewAfterRemoveLike.get().getUseful()).isEqualTo(0);
@@ -173,11 +167,11 @@ class ReviewDbStorageTest {
     @Test
     void removeDislikeReview() {
         Review review = reviewStorage.createReview(badReview);
-        Integer i = reviewStorage.dislikeReview(1, 1);
+        Integer i = reviewStorage.changeReviewEstimation(1, 1, -1);
         Optional<Review> reviewById = reviewStorage.getReviewById(review.getReviewId());
         assertThat(reviewById.get().getUseful()).isEqualTo(-1);
 
-        reviewStorage.removeDislikeReview(1,1);
+        reviewStorage.removeReviewEstimation(1, 1);
         Optional<Review> reviewAfterRemoveDislike = reviewStorage.getReviewById(review.getReviewId());
 
         assertThat(reviewAfterRemoveDislike.get().getUseful()).isEqualTo(0);
