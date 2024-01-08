@@ -20,12 +20,15 @@ public class ReviewDbService {
     private final ReviewStorage reviewStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final UserEventDbService userEventDbService;
 
     @Autowired
-    public ReviewDbService(ReviewStorage reviewStorage, FilmStorage filmStorage, UserStorage userStorage) {
+    public ReviewDbService(ReviewStorage reviewStorage, FilmStorage filmStorage, UserStorage userStorage,
+                           UserEventDbService userEventDbService) {
         this.reviewStorage = reviewStorage;
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.userEventDbService = userEventDbService;
     }
 
     public Review createReview(Review review) {
