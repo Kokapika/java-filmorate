@@ -25,4 +25,6 @@ public interface UserStorage {
     List<User> getFriendsById(int id);
 
     List<User> getCommonFriends(int id, int friendId);
+
+    boolean isExistingUser(int userId);
 }

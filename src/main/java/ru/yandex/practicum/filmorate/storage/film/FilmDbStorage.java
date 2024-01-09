@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
@@ -66,6 +67,30 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        String sql = "SELECT * " +
+                "FROM FILMS as F " +
+                "LEFT JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
+                "RIGHT JOIN FILM_DIRECTOR FD on F.FILM_ID = FD.FILM_ID " +
+                "WHERE DIRECTOR_ID = ? " +
+                "ORDER BY RELEASE_DATE";
+        if (sortBy.equals("likes")) {
+            sql = "SELECT * " +
+                    "FROM FILMS as F " +
+                    "LEFT JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
+                    "RIGHT JOIN FILM_DIRECTOR FD on F.FILM_ID = FD.FILM_ID " +
+                    "LEFT JOIN FILM_LIKES FL on f.FILM_ID = FL.FILM_ID " +
+                    "WHERE DIRECTOR_ID = ? " +
+                    "GROUP BY f.film_id " +
+                    "ORDER BY COUNT(fl.FILM_ID)";
+        }
+        List<Film> films = jdbcTemplate.query(sql, this::filmMapper, directorId);
+        addGenresToFilms(films);
+        addDirectorsToFilms(films);
+        return films;
+    }
+
+    @Override
     public Film getFilmById(int id) {
         String sql = "SELECT * " +
                 "FROM films AS f " +
@@ -85,21 +110,62 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id";
         List<Film> films = jdbcTemplate.query(sql, this::filmMapper);
         addGenresToFilms(films);
+        addDirectorsToFilms(films);
         return films;
     }
 
     @Override
-    public List<Film> getPopularFilms(int count) {
-        final String sql = "SELECT * " +
-                "FROM films AS f " +
-                "LEFT JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
-                "LEFT OUTER JOIN film_likes AS fl on f.film_id = fl.film_id " +
-                "GROUP BY f.film_id " +
-                "ORDER BY COUNT(fl.film_id) " +
-                "DESC LIMIT ?";
-        List<Film> films = jdbcTemplate.query(sql, this::filmMapper, count);
-        addGenresToFilms(films);
-        return films;
+    public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
+        if (genreId != null && year != null) {
+            String sql = "SELECT * " +
+                    "FROM films AS f " +
+                    "LEFT JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
+                    "LEFT OUTER JOIN film_likes AS fl ON f.film_id = fl.film_id " +
+                    "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                    "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM CAST(f.release_date AS DATE)) = ? " +
+                    "GROUP BY f.film_id " +
+                    "ORDER BY f.rate " +
+                    "DESC LIMIT ?";
+            List<Film> films = jdbcTemplate.query(sql, this::filmMapper, genreId, year, count);
+            addGenresToFilms(films);
+            return films;
+        } else if (genreId != null) {
+            String sql = "SELECT * " +
+                    "FROM films AS f " +
+                    "LEFT JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
+                    "LEFT OUTER JOIN film_likes AS fl ON f.film_id = fl.film_id " +
+                    "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                    "WHERE fg.genre_id = ? " +
+                    "GROUP BY f.film_id " +
+                    "ORDER BY f.rate " +
+                    "DESC LIMIT ?";
+            List<Film> films = jdbcTemplate.query(sql, this::filmMapper, genreId, count);
+            addGenresToFilms(films);
+            return films;
+        } else if (year != null) {
+            String sql = "SELECT * " +
+                    "FROM films AS f " +
+                    "LEFT JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
+                    "LEFT OUTER JOIN film_likes AS fl ON f.film_id = fl.film_id " +
+                    "WHERE EXTRACT(YEAR FROM CAST(f.release_date AS DATE)) = ? " +
+                    "GROUP BY f.film_id " +
+                    "ORDER BY f.rate " +
+                    "DESC LIMIT ?";
+            List<Film> films = jdbcTemplate.query(sql, this::filmMapper, year, count);
+            addGenresToFilms(films);
+            return films;
+        } else {
+            String sql = "SELECT * " +
+                    "FROM films AS f " +
+                    "LEFT JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
+                    "LEFT OUTER JOIN film_likes AS fl ON f.film_id = fl.film_id " +
+                    "GROUP BY f.film_id " +
+                    "ORDER BY f.rate DESC " +
+                    "LIMIT ?";
+            List<Film> films = jdbcTemplate.query(sql, this::filmMapper, count);
+            addGenresToFilms(films);
+            return films;
+        }
     }
 
     private Film filmMapper(ResultSet rs, int rowNum) throws SQLException {
@@ -123,6 +189,24 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.query(sql, (rs) -> {
             final Film film = filmById.get(rs.getInt("film_id"));
             film.addGenreToFilm(genreBuilder(rs));
+        });
+    }
+
+    private void addDirectorsToFilms(List<Film> films) {
+        String filmIds = films.stream()
+                .map(Film::getId)
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+        final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, identity()));
+        final String sql = "SELECT * " +
+                "FROM DIRECTORS AS d, FILM_DIRECTOR AS fd " +
+                "WHERE fd.DIRECTOR_ID = d.DIRECTOR_ID AND fd.film_id IN (" + filmIds + ")";
+        jdbcTemplate.query(sql, (rs) -> {
+            final Film film = filmById.get(rs.getInt("film_id"));
+            film.addDirectorToFilm(Director.builder()
+                    .id(rs.getInt("director_id"))
+                    .name(rs.getString("director_name"))
+                    .build());
         });
     }
 }

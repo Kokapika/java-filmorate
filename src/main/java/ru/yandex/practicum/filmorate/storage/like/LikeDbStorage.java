@@ -47,6 +47,6 @@ public class LikeDbStorage implements LikeStorage {
     private FilmLikes likeMapper(ResultSet rs, int rowNum) throws SQLException {
         int filmId = rs.getInt("film_id");
         int userId = rs.getInt("user_id");
-        return new FilmLikes(filmId, userId);
+        return new FilmLikes(userId, filmId);
     }
 }

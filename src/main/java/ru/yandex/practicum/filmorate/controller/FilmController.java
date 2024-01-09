@@ -40,12 +40,14 @@ public class FilmController {
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
         checkFilm(film);
+        log.info("FilmController addFilm film {} ", film.getName());
         return filmDbService.addFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         checkFilm(film);
+        log.info("FilmController updateFilm film {} ", film.getId());
         return filmDbService.updateFilm(film);
     }
 
@@ -65,13 +67,32 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@Positive @RequestParam(name = "count", defaultValue = "10", required = false) Integer count) {
-        return filmDbService.getPopularFilms(count);
+    public List<Film> getPopularFilms(@Positive @RequestParam(name = "count", defaultValue = "10", required = false) Integer count,
+                                      @RequestParam(required = false) Integer genreId,
+                                      @RequestParam(required = false) Integer year) {
+        return filmDbService.getPopularFilms(count, genreId, year);
     }
 
     private void checkFilm(Film film) {
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28)))
             throw new ValidationException("Дата релиза не должна быть раньше 28 декабря 1895 года. Введено: "
                     + film.getReleaseDate());
+    }
+
+    /**
+     * Получает список фильмов режиссера по указанному идентификатору,
+     * отсортированный по количеству лайков или году выпуска в соответствии
+     * с заданным параметром сортировки.
+     *
+     * @param directorId Идентификатор режиссера.
+     * @param sortBy     Параметр сортировки, может принимать значения "year" или "likes".
+     * @return Список фильмов режиссера отсортированный по указанному параметру.
+     */
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(
+            @PathVariable Integer directorId,
+            @RequestParam(defaultValue = "year") String sortBy) {
+        log.info("FilmController getFilmsByDirector director {} sortBy {} ", directorId, sortBy);
+        return filmDbService.getFilmsByDirector(directorId, sortBy);
     }
 }

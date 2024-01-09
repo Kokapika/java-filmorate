@@ -90,6 +90,12 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public boolean isExistingUser(int userId) {
+        String sql = "select 1 from users where user_id = ?";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> true, userId).stream().findFirst().orElse(false);
+    }
+
+    @Override
     public List<User> getFriendsById(int id) {
         String sql = "SELECT * " +
                 "FROM users AS u, friends AS f " +
