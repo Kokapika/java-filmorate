@@ -1,25 +1,31 @@
-package ru.yandex.practicum.filmorate.storage.director;
+package ru.yandex.practicum.filmorate.storage.user;
 
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
 
-public interface DirectorStorage {
-    Director createDirector(Director director);
+public interface UserStorage {
+    int addFriend(int id, int friendId);
 
-    Director getDirectorById(int id);
+    int deleteFriend(int userId, int friendId);
 
-    List<Director> getAllDirectors();
+    User createUser(User user);
 
-    Director updateDirector(Director director);
+    User updateUser(User user);
 
-    int deleteDirectorById(int id);
+    void deleteAllUsers();
 
-    void updateFilmDirectors(Integer id, List<Director> directors);
+    int deleteUserById(int id);
 
-    List<Director> getFilmDirectorsById(Integer id);
+    List<User> getAllUsers();
 
-    void deleteAllDirectorByFilmId(Integer id);
-    boolean doesDirectorExist(Integer directorId);
+    User getUserById(int id);
+
+    List<User> getFriendsById(int id);
+
+    List<User> getCommonFriends(int id, int friendId);
+
+    boolean isExistingUser(int userId);
+
+    boolean isFriend(int userId, int friendId);
 }

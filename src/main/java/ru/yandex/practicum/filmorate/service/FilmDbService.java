@@ -20,6 +20,8 @@ public class FilmDbService {
     private final FilmGenreStorage filmGenreStorage;
     private final MpaStorage mpaStorage;
     private final DirectorStorage directorStorage;
+    private final UserDbService userDbService;
+
 
     public Film addFilm(Film film) {
         Film newFilm = filmStorage.createFilm(film);
@@ -61,8 +63,8 @@ public class FilmDbService {
 
         if (!uniqueDirectorsId.equals(oldDirectorsId)) {
             directorStorage.deleteAllDirectorByFilmId(film.getId());
-            if(!uniqueDirectors.isEmpty()){
-            directorStorage.updateFilmDirectors(film.getId(), uniqueDirectors);
+            if (!uniqueDirectors.isEmpty()) {
+                directorStorage.updateFilmDirectors(film.getId(), uniqueDirectors);
             }
         }
         updateFilm.setGenres(filmGenreStorage.getGenresByFilmId(film.getId()));
@@ -99,5 +101,22 @@ public class FilmDbService {
             throw new NotFoundException("Режиссер не найден id = " + directorId);
         }
         return filmStorage.getFilmsByDirector(directorId, sortBy);
+    }
+
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        if (!directorStorage.isDirectorExist(directorId)) {
+            throw new NotFoundException("Режиссер не найден id = " + directorId);
+        }
+        return filmStorage.getFilmsByDirector(directorId, sortBy);
+    }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        if (!userDbService.isExistingUser(userId)) {
+            throw new NotFoundException("User не найден id = " + userId);
+        }
+        if (!userDbService.isExistingUser(friendId)) {
+            throw new NotFoundException("Friend не найден id = " + friendId);
+        }
+            return filmStorage.getCommonFilms(userId, friendId);
     }
 }

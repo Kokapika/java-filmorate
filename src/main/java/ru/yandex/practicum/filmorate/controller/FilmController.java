@@ -95,4 +95,19 @@ public class FilmController {
         log.info("FilmController getFilmsByDirector director {} sortBy {} ", directorId, sortBy);
         return filmDbService.getFilmsByDirector(directorId, sortBy);
     }
+
+    /**
+     * Получает список фильмов, которые отметили 2 пользователя.
+     *
+     * @param userId Идентификатор пользователя.
+     * @param friendId Идентификатор 2го пользователя .
+     * @return Список фильмов по указанным параметрам.
+     */
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(
+            @RequestParam Integer userId,
+            @RequestParam Integer friendId) {
+        log.info("FilmController getCommonFilms for userId {} friendId {}", userId, friendId);
+     return filmDbService.getCommonFilms(userId, friendId);
+    }
 }
