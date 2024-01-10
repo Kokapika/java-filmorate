@@ -20,6 +20,7 @@ public class FilmDbService {
     private final FilmGenreStorage filmGenreStorage;
     private final MpaStorage mpaStorage;
     private final DirectorStorage directorStorage;
+    private final UserDbService userDbService;
 
     public Film addFilm(Film film) {
         Film newFilm = filmStorage.createFilm(film);
@@ -49,20 +50,17 @@ public class FilmDbService {
                 .stream()
                 .distinct()
                 .collect(Collectors.toList());
-
         List<Integer> uniqueDirectorsId = uniqueDirectors.stream()
                 .map(director -> director.getId())
                 .collect(Collectors.toList());
-
         List<Integer> oldDirectorsId = directorStorage.getFilmDirectorsById(film.getId())
                 .stream()
                 .map(director -> director.getId())
                 .collect(Collectors.toList());
-
         if (!uniqueDirectorsId.equals(oldDirectorsId)) {
             directorStorage.deleteAllDirectorByFilmId(film.getId());
-            if(!uniqueDirectors.isEmpty()){
-            directorStorage.updateFilmDirectors(film.getId(), uniqueDirectors);
+            if (!uniqueDirectors.isEmpty()) {
+                directorStorage.updateFilmDirectors(film.getId(), uniqueDirectors);
             }
         }
         updateFilm.setGenres(filmGenreStorage.getGenresByFilmId(film.getId()));
@@ -95,9 +93,19 @@ public class FilmDbService {
     }
 
     public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
-        if (!directorStorage.doesDirectorExist(directorId)){
+        if (!directorStorage.isDirectorExist(directorId)) {
             throw new NotFoundException("Режиссер не найден id = " + directorId);
         }
         return filmStorage.getFilmsByDirector(directorId, sortBy);
+    }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        if (!userDbService.isExistingUser(userId)) {
+            throw new NotFoundException("User не найден id = " + userId);
+        }
+        if (!userDbService.isExistingUser(friendId)) {
+            throw new NotFoundException("Friend не найден id = " + friendId);
+        }
+            return filmStorage.getCommonFilms(userId, friendId);
     }
 }

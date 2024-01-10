@@ -39,7 +39,6 @@ public class UserDbService {
         return userStorage.getAllUsers();
     }
 
-
     public User getUserById(int id) {
         return userStorage.getUserById(id);
     }
@@ -69,7 +68,11 @@ public class UserDbService {
         return userStorage.isExistingUser(userId);
     }
 
+    public boolean isFriend(int userId, int friendId) {
+        return userStorage.isFriend(userId, friendId);
+
     public List<UserEvent> getUserEvents(Integer id) {
         return userEventDbService.getEventsByUserId(id);
+
     }
 }

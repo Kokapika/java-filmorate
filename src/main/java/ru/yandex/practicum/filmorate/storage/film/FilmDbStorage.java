@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 
 import static java.util.function.UnaryOperator.identity;
 import static ru.yandex.practicum.filmorate.storage.genre.FilmGenreDbStorage.genreBuilder;
-
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
@@ -124,6 +125,23 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY COUNT(fl.film_id) " +
                 "DESC LIMIT ?";
         List<Film> films = jdbcTemplate.query(sql, this::filmMapper, count);
+        addGenresToFilms(films);
+        return films;
+    }
+    @Override
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        final String sql = "SELECT DISTINCT f.*, m.MPA_NAME, COUNT(FiL.USER_ID) as likes " +
+                "FROM films AS f " +
+                "JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
+                "JOIN FILM_LIKES FiL on f.FILM_ID = FiL.FILM_ID " +
+                "where f.FILM_ID in (SELECT DISTINCT fi.FILM_ID " +
+                "FROM films AS fi " +
+                "JOIN FILM_LIKES FL on fi.FILM_ID = FL.FILM_ID " +
+                "JOIN FILM_LIKES FL1 on fi.FILM_ID = FL1.FILM_ID " +
+                "WHERE FL.USER_ID = ? AND FL1.USER_ID = ?) " +
+                "GROUP BY f.FILM_ID " +
+                "ORDER BY likes DESC";
+        List<Film> films = jdbcTemplate.query(sql, this::filmMapper, userId, friendId);
         addGenresToFilms(films);
         return films;
     }

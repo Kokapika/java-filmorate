@@ -32,7 +32,7 @@ class DirectorDbStorageTest {
     }
 
     @Test
-    void createFiveDirectorName() {
+    void createTwoDirectorName() {
         Director director = directorStorage.createDirector(new Director("DirectorName"));
         Director director2 = directorStorage.createDirector(new Director("DirectorName2"));
         List<Director> directorList = List.of(director, director2);
