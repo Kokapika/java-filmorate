@@ -117,13 +117,13 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        final String sql = "SELECT * " +
+        final String sql = "SELECT f.*, mr.*, COUNT(fl.USER_ID) " +
                 "FROM films AS f " +
-                "LEFT JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
-                "LEFT OUTER JOIN film_likes AS fl on f.film_id = fl.film_id " +
+                "LEFT JOIN film_likes fl on f.film_id = fl.film_id " +
+                "LEFT JOIN mpa_ratings mr ON mr.mpa_rating_id = f.mpa_rating_id " +
                 "GROUP BY f.film_id " +
-                "ORDER BY COUNT(fl.film_id) " +
-                "DESC LIMIT ?";
+                "ORDER BY COUNT(fl.USER_ID) DESC " +
+                "LIMIT ?";
         List<Film> films = jdbcTemplate.query(sql, this::filmMapper, count);
         addGenresToFilms(films);
         return films;

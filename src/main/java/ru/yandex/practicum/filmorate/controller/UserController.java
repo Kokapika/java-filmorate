@@ -39,9 +39,9 @@ public class UserController {
         return userDbService.updateUser(user);
     }
 
-    @DeleteMapping("/{id}")
-    public int deleteUser(@PathVariable("id") int id) {
-        return userDbService.deleteUser(id);
+    @DeleteMapping("/{userId}")
+    public int deleteUser(@PathVariable("userId") int userId) {
+        return userDbService.deleteUser(userId);
     }
 
     @GetMapping("/{id}")
