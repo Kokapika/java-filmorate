@@ -20,5 +20,6 @@ public interface DirectorStorage {
     List<Director> getFilmDirectorsById(Integer id);
 
     void deleteAllDirectorByFilmId(Integer id);
+
     boolean isDirectorExist(Integer directorId);
 }
