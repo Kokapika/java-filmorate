@@ -41,6 +41,7 @@ class DirectorDbStorageTest {
 
         assertEquals(directorList, allDirectors);
     }
+
     @Test
     void updateDirector() {
         Director director = directorStorage.createDirector(new Director("DirectorName"));

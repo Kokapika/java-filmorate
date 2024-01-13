@@ -76,6 +76,7 @@ public class UserDbService {
 
     public boolean isFriend(int userId, int friendId) {
         return userStorage.isFriend(userId, friendId);
+    }
 
     public List<UserEvent> getUserEvents(Integer id) {
         return userEventDbService.getEventsByUserId(id);

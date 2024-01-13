@@ -31,13 +31,13 @@ class RecommendationServiceTest {
 
     @Test
     void getRecommendationsTest() {
-        Film testFilm1 = new Film("testFilm1", "testFilm1", LocalDate.of(2022, 1, 1), 200, new Mpa(1, "G"), 1);
+        Film testFilm1 = new Film("testFilm1", "testFilm1", LocalDate.of(2022, 1, 1), 200, new Mpa(1, "G"));
         filmStorage.createFilm(testFilm1);
 
-        Film testFilm2 = new Film("testFilm2", "testFilm2", LocalDate.of(2023, 1, 1), 200, new Mpa(1, "G"), 1);
+        Film testFilm2 = new Film("testFilm2", "testFilm2", LocalDate.of(2023, 1, 1), 200, new Mpa(1, "G"));
         filmStorage.createFilm(testFilm2);
 
-        Film testFilm3 = new Film("testFilm3", "testFilm3", LocalDate.of(2023, 1, 1), 200, new Mpa(1, "G"), 1);
+        Film testFilm3 = new Film("testFilm3", "testFilm3", LocalDate.of(2023, 1, 1), 200, new Mpa(1, "G"));
         filmStorage.createFilm(testFilm3);
 
         User testUser1 = new User("testUser1@mail.ru", "testUser1", "testUser1", LocalDate.of(1999, 1, 1));

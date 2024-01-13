@@ -88,8 +88,8 @@ public class FilmDbService {
         return filmStorage.deleteFilmById(id);
     }
 
-    public List<Film> getPopularFilms(Integer count) {
-        return filmStorage.getPopularFilms(count);
+    public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
+        return filmStorage.getPopularFilms(count, genreId, year);
     }
 
     public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
@@ -106,6 +106,10 @@ public class FilmDbService {
         if (!userDbService.isExistingUser(friendId)) {
             throw new NotFoundException("Friend не найден id = " + friendId);
         }
-            return filmStorage.getCommonFilms(userId, friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
+    public List<Film> getSearchFilms(String query, String by) {
+        return filmStorage.getSearchFilms(query, by);
     }
 }

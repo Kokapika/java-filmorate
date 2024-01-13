@@ -34,8 +34,7 @@ class LikeDbTest {
                 "Расплескалась синева, расплескааааалась",
                 LocalDate.of(2022, 1, 1),
                 200,
-                new Mpa(1, "G"),
-                4);
+                new Mpa(1, "G"));
 
         filmStorage.createFilm(testFilm);
 
@@ -43,8 +42,7 @@ class LikeDbTest {
                 "Расплескалась синева, расплескаааааалась",
                 LocalDate.of(2023, 1, 1),
                 200,
-                new Mpa(1, "G"),
-                4);
+                new Mpa(1, "G"));
 
         filmStorage.createFilm(testFilm2);
 
@@ -61,7 +59,7 @@ class LikeDbTest {
         likeDbStorage.addLike(testFilm.getId(), testUser.getId());
         likeDbStorage.addLike(testFilm2.getId(), testUser2.getId());
 
-        List<Film> likesFilm = filmStorage.getPopularFilms(10);
+        List<Film> likesFilm = filmStorage.getPopularFilms(10, null, null);
 
         assertEquals(likesFilm.size(), 2);
     }
@@ -72,8 +70,7 @@ class LikeDbTest {
                 "Расплескалась синева, расплескааааалась",
                 LocalDate.of(2022, 1, 1),
                 200,
-                new Mpa(1, "G"),
-                4);
+                new Mpa(1, "G"));
 
         filmStorage.createFilm(testFilm);
 
@@ -81,8 +78,7 @@ class LikeDbTest {
                 "Расплескалась синева, расплескаааааалась",
                 LocalDate.of(2023, 1, 1),
                 200,
-                new Mpa(1, "G"),
-                4);
+                new Mpa(1, "G"));
 
         filmStorage.createFilm(testFilm2);
 

@@ -31,10 +31,10 @@ class FilmDbStorageTest {
         Film testFilm1 = filmStorage.createFilm(new Film("testFilm1",
                 "testFilm1",
                 LocalDate.of(2022, 1, 1),
-                200, new Mpa(1, "G"), 1));
+                200, new Mpa(1, "G")));
         Film testFilm2 = filmStorage.createFilm(new Film("testFilm2",
                 "testFilm2", LocalDate.of(2023, 1, 1),
-                200, new Mpa(1, "G"), 1));
+                200, new Mpa(1, "G")));
 
         User testUser = userStorage.createUser(new User("abububugaga@mail.ru", "Koka", "Kokapika",
                 LocalDate.of(1999, 1, 1)));
@@ -46,15 +46,16 @@ class FilmDbStorageTest {
 
         assertEquals(List.of(testFilm1), filmStorage.getCommonFilms(testUser.getId(), testUser2.getId()));
     }
+
     @Test
     void getCommonFilmsIfNotCommonFilm() {
         Film testFilm1 = filmStorage.createFilm(new Film("testFilm1",
                 "testFilm1",
                 LocalDate.of(2022, 1, 1),
-                200, new Mpa(1, "G"), 1));
+                200, new Mpa(1, "G")));
         Film testFilm2 = filmStorage.createFilm(new Film("testFilm2",
                 "testFilm2", LocalDate.of(2023, 1, 1),
-                200, new Mpa(1, "G"), 1));
+                200, new Mpa(1, "G")));
 
         User testUser = userStorage.createUser(new User("abububugaga@mail.ru", "Koka", "Kokapika",
                 LocalDate.of(1999, 1, 1)));
@@ -64,6 +65,7 @@ class FilmDbStorageTest {
 
         assertEquals(List.of(), filmStorage.getCommonFilms(testUser.getId(), testUser2.getId()));
     }
+
     @Test
     void getCommonFilmsIfFilmNotExist() {
         User testUser = userStorage.createUser(new User("abububugaga@mail.ru", "Koka", "Kokapika",
@@ -73,18 +75,19 @@ class FilmDbStorageTest {
 
         assertEquals(List.of(), filmStorage.getCommonFilms(testUser.getId(), testUser2.getId()));
     }
+
     @Test
     void getCommonFilmsIfTwoFilmCommon() {
         Film testFilm1 = filmStorage.createFilm(new Film("testFilm1",
                 "testFilm1",
                 LocalDate.of(2022, 1, 1),
-                200, new Mpa(1, "G"), 1));
+                200, new Mpa(1, "G")));
         Film testFilm2 = filmStorage.createFilm(new Film("testFilm2",
                 "testFilm2", LocalDate.of(2023, 1, 1),
-                200, new Mpa(1, "G"), 1));
+                200, new Mpa(1, "G")));
         Film testFilm3 = filmStorage.createFilm(new Film("testFilm3",
                 "testFilm3", LocalDate.of(2023, 1, 1),
-                200, new Mpa(1, "G"), 1));
+                200, new Mpa(1, "G")));
 
         User testUser = userStorage.createUser(new User("abububugaga@mail.ru", "Koka", "Kokapika",
                 LocalDate.of(1999, 1, 1)));
@@ -104,10 +107,10 @@ class FilmDbStorageTest {
         Film testFilm1 = filmStorage.createFilm(new Film("testFilm1",
                 "testFilm1",
                 LocalDate.of(2022, 1, 1),
-                200, new Mpa(1, "G"), 1));
+                200, new Mpa(1, "G")));
         Film testFilm2 = filmStorage.createFilm(new Film("testFilm2",
                 "testFilm2", LocalDate.of(2023, 1, 1),
-                200, new Mpa(1, "G"), 1));
+                200, new Mpa(1, "G")));
 
         User testUser = userStorage.createUser(new User("abububugaga@mail.ru", "Koka", "Kokapika",
                 LocalDate.of(1999, 1, 1)));
