@@ -26,7 +26,6 @@ public class LikeDbService {
         User user = userStorage.getUserById(userId);
         userEventDbService.addEvent(EventType.LIKE, userId, filmId, OperationType.ADD);
         likesStorage.addLike(filmId, userId);
-        userEventDbService.addEvent(EventType.LIKE, userId, filmId, OperationType.ADD);
         return film;
     }
 
