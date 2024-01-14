@@ -5,7 +5,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.List;
 
 public interface UserStorage {
-
     int addFriend(int id, int friendId);
 
     int deleteFriend(int userId, int friendId);
@@ -27,4 +26,6 @@ public interface UserStorage {
     List<User> getCommonFriends(int id, int friendId);
 
     boolean isExistingUser(int userId);
+
+    boolean isFriend(int userId, int friendId);
 }

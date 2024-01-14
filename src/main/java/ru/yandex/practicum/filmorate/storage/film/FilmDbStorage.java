@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 import static java.util.function.UnaryOperator.identity;
 import static ru.yandex.practicum.filmorate.storage.genre.FilmGenreDbStorage.genreBuilder;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
@@ -32,7 +34,6 @@ public class FilmDbStorage implements FilmStorage {
         values.put("description", film.getDescription());
         values.put("release_date", film.getReleaseDate());
         values.put("duration", film.getDuration());
-        values.put("rate", film.getRate());
         values.put("mpa_rating_id", film.getMpa().getId());
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("films")
@@ -115,15 +116,78 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopularFilms(int count) {
-        final String sql = "SELECT * " +
+    public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
+        String sqlFilter;
+
+        if (genreId != null && year != null) {
+            sqlFilter = "WHERE fg.genre_id = " + genreId + " AND EXTRACT(YEAR FROM CAST(f.release_date AS DATE)) = " + year;
+        } else if (genreId != null) {
+            sqlFilter = "WHERE fg.genre_id = " + genreId;
+        } else if (year != null) {
+            sqlFilter = "WHERE EXTRACT(YEAR FROM CAST(f.release_date AS DATE)) = " + year;
+        } else {
+            sqlFilter = "";
+        }
+
+        String sql = "SELECT f.*, mr.*, COUNT(fl.USER_ID) " +
                 "FROM films AS f " +
-                "LEFT JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
-                "LEFT OUTER JOIN film_likes AS fl on f.film_id = fl.film_id " +
+                "LEFT JOIN mpa_ratings AS mr ON mr.mpa_rating_id = f.mpa_rating_id " +
+                "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                sqlFilter + " " +
                 "GROUP BY f.film_id " +
-                "ORDER BY COUNT(fl.film_id) " +
+                "ORDER BY COUNT(fl.USER_ID) " +
                 "DESC LIMIT ?";
         List<Film> films = jdbcTemplate.query(sql, this::filmMapper, count);
+        addGenresToFilms(films);
+        return films;
+    }
+
+    @Override
+    public List<Film> getSearchFilms(String query, String by) {
+        String sqlFilter = null;
+
+        if (by.equals("title")) {
+            sqlFilter = "WHERE LOWER(f.name) LIKE LOWER('%" + query + "%') ";
+        }
+        if (by.equals("director")) {
+            sqlFilter = "WHERE LOWER(d.director_name) LIKE LOWER('%" + query + "%') ";
+        }
+        if (by.equals("title,director") || by.equals("director,title")) {
+            sqlFilter = "WHERE LOWER(f.name) LIKE LOWER('%" + query + "%') " +
+                    "OR LOWER(d.director_name) LIKE LOWER('%" + query + "%') ";
+        }
+
+        String sql = "SELECT f.*, mr.*, d.* " +
+                "FROM films AS f " +
+                "LEFT JOIN mpa_ratings AS mr ON mr.mpa_rating_id = f.mpa_rating_id " +
+                "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
+                "LEFT JOIN film_director AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON d.director_id = fd.director_id " +
+                sqlFilter +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(fl.USER_ID) DESC";
+
+        List<Film> films = jdbcTemplate.query(sql, this::filmMapper);
+        addGenresToFilms(films);
+        addDirectorsToFilms(films);
+        return films;
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        final String sql = "SELECT DISTINCT f.*, m.MPA_NAME, COUNT(FiL.USER_ID) as likes " +
+                "FROM films AS f " +
+                "JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
+                "JOIN FILM_LIKES FiL on f.FILM_ID = FiL.FILM_ID " +
+                "where f.FILM_ID in (SELECT DISTINCT fi.FILM_ID " +
+                "FROM films AS fi " +
+                "JOIN FILM_LIKES FL on fi.FILM_ID = FL.FILM_ID " +
+                "JOIN FILM_LIKES FL1 on fi.FILM_ID = FL1.FILM_ID " +
+                "WHERE FL.USER_ID = ? AND FL1.USER_ID = ?) " +
+                "GROUP BY f.FILM_ID " +
+                "ORDER BY likes DESC";
+        List<Film> films = jdbcTemplate.query(sql, this::filmMapper, userId, friendId);
         addGenresToFilms(films);
         return films;
     }
@@ -134,7 +198,6 @@ public class FilmDbStorage implements FilmStorage {
                 rs.getDate("release_date").toLocalDate(),
                 rs.getString("description"),
                 rs.getInt("duration"),
-                rs.getInt("rate"),
                 new Mpa(rs.getInt("mpa_rating_id"), rs.getString("mpa_name")));
     }
 

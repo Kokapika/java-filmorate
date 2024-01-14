@@ -32,7 +32,10 @@ public class UserDbService {
     }
 
     public int deleteUser(int id) {
-        return userStorage.deleteUserById(id);
+        if (userStorage.isExistingUser(id))
+            return userStorage.deleteUserById(id);
+        else
+            throw new NotFoundException(String.format("Пользователь %d не может быть найден", id));
     }
 
     public List<User> getUsers() {
@@ -58,7 +61,10 @@ public class UserDbService {
     }
 
     public List<User> getFriends(int id) {
-        return userStorage.getFriendsById(id);
+        if (userStorage.isExistingUser(id))
+            return userStorage.getFriendsById(id);
+        else
+            throw new NotFoundException(String.format("Пользователь %d не может быть найден", id));
     }
 
     public List<User> getCommonFriends(int id, int otherId) {
@@ -69,7 +75,11 @@ public class UserDbService {
         return userStorage.isExistingUser(userId);
     }
 
+    public boolean isFriend(int userId, int friendId) {
+        return userStorage.isFriend(userId, friendId);
+    }
     public List<UserEvent> getUserEvents(Integer id) {
         return userEventDbService.getEventsByUserId(id);
+
     }
 }

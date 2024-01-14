@@ -67,8 +67,10 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@Positive @RequestParam(name = "count", defaultValue = "10", required = false) Integer count) {
-        return filmDbService.getPopularFilms(count);
+    public List<Film> getPopularFilms(@Positive @RequestParam(name = "count", defaultValue = "10", required = false) Integer count,
+                                      @RequestParam(required = false) Integer genreId,
+                                      @RequestParam(required = false) Integer year) {
+        return filmDbService.getPopularFilms(count, genreId, year);
     }
 
     private void checkFilm(Film film) {
@@ -92,5 +94,26 @@ public class FilmController {
             @RequestParam(defaultValue = "year") String sortBy) {
         log.info("FilmController getFilmsByDirector director {} sortBy {} ", directorId, sortBy);
         return filmDbService.getFilmsByDirector(directorId, sortBy);
+    }
+
+    /**
+     * Получает список фильмов, которые отметили 2 пользователя.
+     *
+     * @param userId   Идентификатор пользователя.
+     * @param friendId Идентификатор 2го пользователя .
+     * @return Список фильмов по указанным параметрам.
+     */
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(
+            @RequestParam Integer userId,
+            @RequestParam Integer friendId) {
+        log.info("FilmController getCommonFilms for userId {} friendId {}", userId, friendId);
+        return filmDbService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/search")
+    public List<Film> getSearchFilms(@RequestParam String query,
+                                     @RequestParam String by) {
+        return filmDbService.getSearchFilms(query, by);
     }
 }

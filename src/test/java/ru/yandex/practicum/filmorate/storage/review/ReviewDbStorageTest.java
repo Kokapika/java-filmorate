@@ -50,7 +50,6 @@ class ReviewDbStorageTest {
                 .releaseDate(LocalDate.of(2008, 11, 1))
                 .description("This is description")
                 .duration(120)
-                .rate(0)
                 .mpa(new Mpa())
                 .genres(new ArrayList<>())
                 .build();

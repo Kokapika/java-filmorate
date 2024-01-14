@@ -8,7 +8,6 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -101,7 +100,7 @@ public class DirectorDbStorage implements DirectorStorage {
                 rs.getString("director_name"));
     }
     @Override
-    public boolean doesDirectorExist(Integer directorId) {
+    public boolean isDirectorExist(Integer directorId) {
         String sql = "SELECT 1 FROM DIRECTORS WHERE DIRECTOR_ID = ?";
         return jdbcTemplate.query(sql, (rs, rowNum) -> true, directorId).stream().findFirst().orElse(false);
     }
