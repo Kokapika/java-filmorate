@@ -42,6 +42,7 @@ public class UserDbService {
         return userStorage.getAllUsers();
     }
 
+
     public User getUserById(int id) {
         return userStorage.getUserById(id);
     }
