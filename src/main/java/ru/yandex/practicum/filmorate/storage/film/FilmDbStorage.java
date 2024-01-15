@@ -140,6 +140,7 @@ public class FilmDbStorage implements FilmStorage {
                 "DESC LIMIT ?";
         List<Film> films = jdbcTemplate.query(sql, this::filmMapper, count);
         addGenresToFilms(films);
+        addDirectorsToFilms(films);
         return films;
     }
 

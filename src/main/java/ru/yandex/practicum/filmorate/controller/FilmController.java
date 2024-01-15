@@ -23,10 +23,6 @@ public class FilmController {
     private final FilmDbService filmDbService;
     private final LikeDbService likesDbService;
 
-    protected void deleteFilms() {
-        filmDbService.deleteFilms();
-    }
-
     @GetMapping
     public List<Film> getFilms() {
         return filmDbService.getFilms();

@@ -18,10 +18,6 @@ public class UserController {
     private final UserDbService userDbService;
     private final RecommendationService recommendationsService;
 
-    protected void clearUsers() {
-        userDbService.deleteUsers();
-    }
-
     @GetMapping
     public List<User> getUsers() {
         return userDbService.getUsers();
