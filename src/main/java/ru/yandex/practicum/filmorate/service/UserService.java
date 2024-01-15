@@ -74,6 +74,5 @@ public class UserService {
     }
     public List<UserEvent> getUserEvents(Integer id) {
         return userEventService.getEventsByUserId(id);
-
     }
 }
