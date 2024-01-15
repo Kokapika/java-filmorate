@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmDbService;
-import ru.yandex.practicum.filmorate.service.LikeDbService;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.LikeService;
 
 import javax.validation.Valid;
 import javax.validation.ValidationException;
@@ -20,8 +20,8 @@ import java.util.List;
 @Validated
 @Slf4j
 public class FilmController {
-    private final FilmDbService filmDbService;
-    private final LikeDbService likesDbService;
+    private final FilmService filmDbService;
+    private final LikeService likesDbService;
 
     @GetMapping
     public List<Film> getFilms() {

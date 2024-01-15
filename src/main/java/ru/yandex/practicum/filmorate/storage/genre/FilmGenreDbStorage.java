@@ -47,7 +47,6 @@ public class FilmGenreDbStorage implements FilmGenreStorage {
                         ps.setInt(1, filmId);
                         ps.setInt(2, genresNoRepeat.get(i).getId());
                     }
-
                     public int getBatchSize() {
                         return genresNoRepeat.size();
                     }

@@ -15,12 +15,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class FilmDbService {
+public class FilmService {
     private final FilmStorage filmStorage;
     private final FilmGenreStorage filmGenreStorage;
     private final MpaStorage mpaStorage;
     private final DirectorStorage directorStorage;
-    private final UserDbService userDbService;
+    private final UserService userService;
 
     public Film addFilm(Film film) {
         Film newFilm = filmStorage.createFilm(film);
@@ -73,10 +73,6 @@ public class FilmDbService {
         return filmStorage.getAllFilms();
     }
 
-    public void deleteFilms() {
-        filmStorage.deleteAllFilms();
-    }
-
     public Film getFilmById(Integer id) {
         Film film = filmStorage.getFilmById(id);
         film.setGenres(filmGenreStorage.getGenresByFilmId(film.getId()));
@@ -100,10 +96,10 @@ public class FilmDbService {
     }
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        if (!userDbService.isExistingUser(userId)) {
+        if (!userService.isExistingUser(userId)) {
             throw new NotFoundException("User не найден id = " + userId);
         }
-        if (!userDbService.isExistingUser(friendId)) {
+        if (!userService.isExistingUser(friendId)) {
             throw new NotFoundException("Friend не найден id = " + friendId);
         }
         return filmStorage.getCommonFilms(userId, friendId);

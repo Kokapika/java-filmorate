@@ -3,21 +3,19 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.user_event.EventType;
 import ru.yandex.practicum.filmorate.model.user_event.OperationType;
 import ru.yandex.practicum.filmorate.model.user_event.UserEvent;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserDbService {
+public class UserService {
     private final UserStorage userStorage;
-    private final UserEventDbService userEventDbService;
+    private final UserEventService userEventService;
 
     public User addUser(User user) {
         return userStorage.createUser(user);
@@ -25,10 +23,6 @@ public class UserDbService {
 
     public User updateUser(User user) {
         return userStorage.updateUser(user);
-    }
-
-    public void deleteUsers() {
-        userStorage.deleteAllUsers();
     }
 
     public int deleteUser(int id) {
@@ -52,12 +46,12 @@ public class UserDbService {
             throw new NotFoundException("Пользователь не может быть добавлен");
         }
         userStorage.addFriend(id, friendId);
-        userEventDbService.addEvent(EventType.FRIEND, id, friendId, OperationType.ADD);
+        userEventService.addEvent(EventType.FRIEND, id, friendId, OperationType.ADD);
     }
 
     public void deleteFriend(int id, int friendId) {
         userStorage.deleteFriend(id, friendId);
-        userEventDbService.addEvent(EventType.FRIEND, id, friendId, OperationType.REMOVE);
+        userEventService.addEvent(EventType.FRIEND, id, friendId, OperationType.REMOVE);
     }
 
     public List<User> getFriends(int id) {
@@ -79,7 +73,7 @@ public class UserDbService {
         return userStorage.isFriend(userId, friendId);
     }
     public List<UserEvent> getUserEvents(Integer id) {
-        return userEventDbService.getEventsByUserId(id);
+        return userEventService.getEventsByUserId(id);
 
     }
 }

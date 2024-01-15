@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class RecommendationService {
-    private final UserDbService userService;
-    private final FilmDbService filmService;
-    private final LikeDbService likeService;
+    private final UserService userService;
+    private final FilmService filmService;
+    private final LikeService likeService;
 
     public List<Film> getRecommendations(int userId) {
         if (!userService.isExistingUser(userId)) {
