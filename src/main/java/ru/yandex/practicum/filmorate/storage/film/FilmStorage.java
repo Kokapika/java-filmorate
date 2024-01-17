@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.SortBy;
 
 import java.util.List;
 
@@ -21,7 +22,7 @@ public interface FilmStorage {
 
     int deleteFilmById(int id);
 
-    List<Film> getFilmsByDirector(Integer directorId, String sortBy);
+    List<Film> getFilmsByDirector(Integer directorId, SortBy sortBy);
 
     List<Film> getCommonFilms(Integer userId, Integer friendId);
 }

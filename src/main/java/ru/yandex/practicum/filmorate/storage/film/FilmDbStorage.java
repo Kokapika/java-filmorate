@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.enums.SortBy;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -68,22 +69,19 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+    public List<Film> getFilmsByDirector(Integer directorId, SortBy sortBy) {
         String sql = "SELECT * " +
                 "FROM FILMS as F " +
                 "LEFT JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
-                "RIGHT JOIN FILM_DIRECTOR FD on F.FILM_ID = FD.FILM_ID " +
-                "WHERE DIRECTOR_ID = ? " +
-                "ORDER BY RELEASE_DATE";
-        if (sortBy.equals("likes")) {
-            sql = "SELECT * " +
-                    "FROM FILMS as F " +
-                    "LEFT JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
-                    "RIGHT JOIN FILM_DIRECTOR FD on F.FILM_ID = FD.FILM_ID " +
-                    "LEFT JOIN FILM_LIKES FL on f.FILM_ID = FL.FILM_ID " +
+                "RIGHT JOIN FILM_DIRECTOR FD on F.FILM_ID = FD.FILM_ID ";
+        if (sortBy == SortBy.LIKES) {
+            sql += "LEFT JOIN FILM_LIKES FL on f.FILM_ID = FL.FILM_ID " +
                     "WHERE DIRECTOR_ID = ? " +
                     "GROUP BY f.film_id " +
                     "ORDER BY COUNT(fl.FILM_ID)";
+        } else {
+            sql += "WHERE DIRECTOR_ID = ? " +
+                    "ORDER BY RELEASE_DATE";
         }
         List<Film> films = jdbcTemplate.query(sql, this::filmMapper, directorId);
         addGenresToFilms(films);
@@ -118,7 +116,6 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
         String sqlFilter;
-
         if (genreId != null && year != null) {
             sqlFilter = "WHERE fg.genre_id = " + genreId + " AND EXTRACT(YEAR FROM CAST(f.release_date AS DATE)) = " + year;
         } else if (genreId != null) {
@@ -128,7 +125,6 @@ public class FilmDbStorage implements FilmStorage {
         } else {
             sqlFilter = "";
         }
-
         String sql = "SELECT f.*, mr.*, COUNT(fl.USER_ID) " +
                 "FROM films AS f " +
                 "LEFT JOIN mpa_ratings AS mr ON mr.mpa_rating_id = f.mpa_rating_id " +
@@ -147,7 +143,6 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getSearchFilms(String query, String by) {
         String sqlFilter = null;
-
         if (by.equals("title")) {
             sqlFilter = "WHERE LOWER(f.name) LIKE LOWER('%" + query + "%') ";
         }
@@ -158,7 +153,6 @@ public class FilmDbStorage implements FilmStorage {
             sqlFilter = "WHERE LOWER(f.name) LIKE LOWER('%" + query + "%') " +
                     "OR LOWER(d.director_name) LIKE LOWER('%" + query + "%') ";
         }
-
         String sql = "SELECT f.*, mr.*, d.* " +
                 "FROM films AS f " +
                 "LEFT JOIN mpa_ratings AS mr ON mr.mpa_rating_id = f.mpa_rating_id " +
@@ -168,7 +162,6 @@ public class FilmDbStorage implements FilmStorage {
                 sqlFilter +
                 "GROUP BY f.film_id " +
                 "ORDER BY COUNT(fl.USER_ID) DESC";
-
         List<Film> films = jdbcTemplate.query(sql, this::filmMapper);
         addGenresToFilms(films);
         addDirectorsToFilms(films);

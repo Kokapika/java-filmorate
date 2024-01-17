@@ -1,14 +1,17 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.FilmGenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
+import ru.yandex.practicum.filmorate.model.enums.SortBy;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,8 +27,11 @@ public class FilmService {
 
     public Film addFilm(Film film) {
         Film newFilm = filmStorage.createFilm(film);
-        if (film.getGenres() != null) {
-            filmGenreStorage.updateGenres(film.getId(), film.getGenres());
+        if (!film.getGenres().isEmpty()) {
+            List<Genre> uniqueGenres = film.getGenres().stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+            filmGenreStorage.updateGenres(film.getId(), uniqueGenres);
         }
         if (!film.getDirectors().isEmpty()) {
             List<Director> uniqueDirectors = film.getDirectors().stream()
@@ -44,7 +50,10 @@ public class FilmService {
         Film updateFilm = filmStorage.updateFilm(film);
         filmGenreStorage.deleteGenresByFilmId(film.getId());
         if (film.getGenres() != null) {
-            filmGenreStorage.updateGenres(film.getId(), film.getGenres());
+            List<Genre> uniqueGenres = film.getGenres().stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+            filmGenreStorage.updateGenres(film.getId(), uniqueGenres);
         }
         List<Director> uniqueDirectors = film.getDirectors()
                 .stream()
@@ -57,7 +66,7 @@ public class FilmService {
                 .stream()
                 .map(director -> director.getId())
                 .collect(Collectors.toList());
-        if (!uniqueDirectorsId.equals(oldDirectorsId)) {
+        if (!CollectionUtils.isEqualCollection(uniqueDirectorsId, oldDirectorsId)) {
             directorStorage.deleteAllDirectorByFilmId(film.getId());
             if (!uniqueDirectors.isEmpty()) {
                 directorStorage.updateFilmDirectors(film.getId(), uniqueDirectors);
@@ -88,7 +97,7 @@ public class FilmService {
         return filmStorage.getPopularFilms(count, genreId, year);
     }
 
-    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+    public List<Film> getFilmsByDirector(Integer directorId, SortBy sortBy) {
         if (!directorStorage.isDirectorExist(directorId)) {
             throw new NotFoundException("Режиссер не найден id = " + directorId);
         }

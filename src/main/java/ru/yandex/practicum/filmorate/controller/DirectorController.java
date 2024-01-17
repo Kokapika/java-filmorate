@@ -28,19 +28,19 @@ public class DirectorController {
 
     @PostMapping
     public Director addDirector(@Valid @RequestBody Director director) {
-        log.info("DirectorController addDirector directorName {}", director.getName());
+        log.info("ddDirector directorName {}", director.getName());
         return directorService.addDirector(director);
     }
 
     @PutMapping
     public Director updateDirector(@Valid @RequestBody Director director) {
-        log.info("DirectorController updateDirector directorId {}", director.getId());
+        log.info("updateDirector directorId {}", director.getId());
         return directorService.updateDirector(director);
     }
 
     @DeleteMapping("/{id}")
     public int deleteDirectorById(@PathVariable Integer id) {
-        log.info("DirectorController deleteDirectorById directorId {}", id);
+        log.info("deleteDirectorById directorId {}", id);
         return directorService.deleteDirectorById(id);
     }
 }

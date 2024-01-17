@@ -28,8 +28,7 @@ CREATE TABLE IF NOT EXISTS films
     description      VARCHAR(200)    NOT NULL,
     release_date     DATE            NOT NULL,
     duration         INT             NOT NULL,
-    mpa_rating_id    INT             REFERENCES mpa_ratings(mpa_rating_id),
-    rate             INT
+    mpa_rating_id    INT             REFERENCES mpa_ratings(mpa_rating_id)
 );
 
 CREATE TABLE IF NOT EXISTS friends

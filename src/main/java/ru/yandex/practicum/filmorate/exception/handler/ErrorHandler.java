@@ -33,4 +33,11 @@ public class ErrorHandler {
         log.warn("Дубликат ключа");
         return new ErrorResponse("Ошибка дубликата ключа", e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
+        log.warn("Некорректные аргументы");
+        return new ErrorResponse("Ошибка входных аргументов", e.getMessage());
+    }
 }

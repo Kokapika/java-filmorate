@@ -10,7 +10,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -39,17 +38,16 @@ public class FilmGenreDbStorage implements FilmGenreStorage {
     }
 
     public void updateGenres(int filmId, List<Genre> genres) {
-        List<Genre> genresNoRepeat = genres.stream().distinct().collect(Collectors.toList());
         jdbcTemplate.batchUpdate(
                 "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
                 new BatchPreparedStatementSetter() {
                     public void setValues(PreparedStatement ps, int i) throws SQLException {
                         ps.setInt(1, filmId);
-                        ps.setInt(2, genresNoRepeat.get(i).getId());
+                        ps.setInt(2, genres.get(i).getId());
                     }
 
                     public int getBatchSize() {
-                        return genresNoRepeat.size();
+                        return genres.size();
                     }
                 });
     }
