@@ -82,6 +82,10 @@ public class FilmService {
         return filmStorage.getAllFilms();
     }
 
+    public List<Film> getFilms(List<Integer> filmIds) {
+        return filmStorage.getFilms(filmIds);
+    }
+
     public Film getFilmById(Integer id) {
         Film film = filmStorage.getFilmById(id);
         film.setGenres(filmGenreStorage.getGenresByFilmId(film.getId()));

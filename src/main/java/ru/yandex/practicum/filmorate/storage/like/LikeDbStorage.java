@@ -32,6 +32,15 @@ public class LikeDbStorage implements LikeStorage {
         return jdbcTemplate.query(sql, this::likeMapper);
     }
 
+    @Override
+    public List<FilmLikes> getCommonLikes(int userId) {
+        String sql = "with common_users as\n" +
+                "(select distinct user_id from film_likes fl where fl.film_id in (select film_id from film_likes fl2 where fl2.user_id = ?))\n" +
+                "select fl.* from film_likes fl\n" +
+                "where fl.user_id in (select user_id from common_users)";
+        return jdbcTemplate.query(sql, this::likeMapper, userId);
+    }
+
     private FilmLikes likeMapper(ResultSet rs, int rowNum) throws SQLException {
         int filmId = rs.getInt("film_id");
         int userId = rs.getInt("user_id");

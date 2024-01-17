@@ -20,22 +20,25 @@ public class RecommendationService {
         if (!userService.isExistingUser(userId)) {
             throw new NotFoundException(String.format("Пользователь с id %d не найден", userId));
         }
-        return getMostCommonLikes(userId).stream()
-                .map(filmLikes -> filmService.getFilmById(filmLikes.getFilmId()))
+        List<FilmLikes> mostCommonLikes = getMostCommonLikes(userId);
+        List<Integer> filmIds = mostCommonLikes.stream()
+                .map(FilmLikes::getFilmId)
                 .collect(Collectors.toList());
+
+        return filmService.getFilms(filmIds);
     }
 
     private List<FilmLikes> getMostCommonLikes(int targetUserId) {
-        List<FilmLikes> allLikes = likeService.getAllLikes();
+        List<FilmLikes> commonLikes = likeService.getCommonLikes(targetUserId);
 
-        Map<Integer, List<FilmLikes>> allLikesGroupedByUser = allLikes.stream()
+        Map<Integer, List<FilmLikes>> commonLikesGroupedByUser = commonLikes.stream()
                 .collect(Collectors.groupingBy(FilmLikes::getUserId));
-        List<FilmLikes> likesByTargetUser = allLikesGroupedByUser.remove(targetUserId);
+        List<FilmLikes> likesByTargetUser = commonLikesGroupedByUser.remove(targetUserId);
         if (likesByTargetUser == null) {
             return List.of();
         }
 
-        Map<List<FilmLikes>, Integer> intersectionOccasion = allLikesGroupedByUser.entrySet().stream()
+        Map<List<FilmLikes>, Integer> intersectionOccasion = commonLikesGroupedByUser.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getValue, v -> 0));
         for (FilmLikes likeByTargetUser : likesByTargetUser) {
             intersectionOccasion.forEach((likesListKey, occasion) -> {

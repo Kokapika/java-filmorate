@@ -46,4 +46,9 @@ public class LikeService {
     public List<FilmLikes> getAllLikes() {
         return likesStorage.getAllLikes();
     }
+
+    public List<FilmLikes> getCommonLikes(int userId) {
+        log.info("Получаем похожие лайки для userId {} ", userId);
+        return likesStorage.getCommonLikes(userId);
+    }
 }

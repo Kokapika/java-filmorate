@@ -103,6 +103,21 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getFilms(List<Integer> filmIds) {
+        String filmIdsString = filmIds.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+        String sql = "SELECT * " +
+                "FROM films AS f " +
+                "LEFT JOIN mpa_ratings AS m ON m.mpa_rating_id = f.mpa_rating_id " +
+                "WHERE f.film_id in (" + filmIdsString + ")";
+        List<Film> films = jdbcTemplate.query(sql, this::filmMapper);
+        addGenresToFilms(films);
+        addDirectorsToFilms(films);
+        return films;
+    }
+
+    @Override
     public List<Film> getAllFilms() {
         String sql = "SELECT * " +
                 "FROM films AS f " +

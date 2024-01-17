@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
-    private final RecommendationService recommendationsService;
+    private final RecommendationService recommendationService;
 
     @GetMapping
     public List<User> getUsers() {
@@ -67,7 +67,7 @@ public class UserController {
 
     @GetMapping("/{id}/recommendations")
     public List<Film> getRecommendations(@PathVariable("id") Integer id) {
-        return recommendationsService.getRecommendations(id);
+        return recommendationService.getRecommendations(id);
     }
 
     @GetMapping("/{id}/feed")
