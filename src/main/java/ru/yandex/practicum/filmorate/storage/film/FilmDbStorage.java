@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.enums.SearchBy;
 import ru.yandex.practicum.filmorate.model.enums.SortBy;
 
 import java.sql.ResultSet;
@@ -156,19 +157,21 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getSearchFilms(String query, String by) {
+    public List<Film> searchFilms(String query, SearchBy searchByEnum) {
         String sqlFilter = null;
-        if (by.equals("title")) {
-            sqlFilter = "WHERE LOWER(f.name) LIKE LOWER('%" + query + "%') ";
+        switch (searchByEnum) {
+            case TITLE:
+                sqlFilter = "WHERE LOWER(f.name) LIKE LOWER('%" + query + "%') ";
+                break;
+            case DIRECTOR:
+                sqlFilter = "WHERE LOWER(d.director_name) LIKE LOWER('%" + query + "%') ";
+                break;
+            case TITLE_AND_DIRECTOR:
+                sqlFilter = "WHERE LOWER(f.name) LIKE LOWER('%" + query + "%') " +
+                        "OR LOWER(d.director_name) LIKE LOWER('%" + query + "%') ";
+                break;
         }
-        if (by.equals("director")) {
-            sqlFilter = "WHERE LOWER(d.director_name) LIKE LOWER('%" + query + "%') ";
-        }
-        if (by.equals("title,director") || by.equals("director,title")) {
-            sqlFilter = "WHERE LOWER(f.name) LIKE LOWER('%" + query + "%') " +
-                    "OR LOWER(d.director_name) LIKE LOWER('%" + query + "%') ";
-        }
-        String sql = "SELECT f.*, mr.*, d.* " +
+        String sql = "SELECT f.*, mr.* " +
                 "FROM films AS f " +
                 "LEFT JOIN mpa_ratings AS mr ON mr.mpa_rating_id = f.mpa_rating_id " +
                 "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +

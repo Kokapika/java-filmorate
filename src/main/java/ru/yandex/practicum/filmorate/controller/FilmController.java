@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.SearchBy;
 import ru.yandex.practicum.filmorate.model.enums.SortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.LikeService;
@@ -110,8 +111,18 @@ public class FilmController {
     }
 
     @GetMapping("/search")
-    public List<Film> getSearchFilms(@RequestParam String query,
-                                     @RequestParam String by) {
-        return filmDbService.getSearchFilms(query, by);
+    public List<Film> searchFilms(@RequestParam String query,
+                                  @RequestParam String by) {
+        SearchBy searchByEnum = null;
+        if (by.equalsIgnoreCase("title")) {
+            searchByEnum = SearchBy.TITLE;
+        }
+        if (by.equalsIgnoreCase("director")) {
+            searchByEnum = SearchBy.DIRECTOR;
+        }
+        if (by.equalsIgnoreCase("title,director") || by.equalsIgnoreCase("director,title")) {
+            searchByEnum = SearchBy.TITLE_AND_DIRECTOR;
+        }
+        return filmDbService.searchFilms(query, searchByEnum);
     }
 }

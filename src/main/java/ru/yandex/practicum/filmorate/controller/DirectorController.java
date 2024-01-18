@@ -28,7 +28,7 @@ public class DirectorController {
 
     @PostMapping
     public Director addDirector(@Valid @RequestBody Director director) {
-        log.info("ddDirector directorName {}", director.getName());
+        log.info("addDirector directorName {}", director.getName());
         return directorService.addDirector(director);
     }
 
