@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.review;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -67,10 +68,15 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Optional<Review> getReviewById(int reviewId) {
-        System.out.println(reviewId);
         String query = "SELECT * FROM review WHERE review_id =?";
-        log.info("Review with ID {} returned.", reviewId);
-        return Optional.ofNullable(jdbcTemplate.queryForObject(query, this::mapToReview, reviewId));
+        Optional<Review> review;
+        try {
+            review = Optional.ofNullable(jdbcTemplate.queryForObject(query, this::mapToReview, reviewId));
+            log.info("Review with ID {} returned.", reviewId);
+        } catch (DataAccessException e) {
+            throw new NotFoundException("Review with id " + reviewId + " does not exist.");
+        }
+        return review;
     }
 
     @Override
@@ -111,9 +117,6 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Integer removeReviewEstimation(int idReview, int idUser) {
-        if (idUser < 1) {
-            throw new NotFoundException("User not exists by ID=" + idUser);
-        }
         String query = "DELETE FROM estimation_review WHERE review_id=? AND user_id=?";
         int insertResult = jdbcTemplate.update(query, idReview, idUser);
         if (insertResult > 0) {
@@ -123,7 +126,6 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     private Review mapToReview(ResultSet rs, int rowNum) throws SQLException {
-        System.out.println(rs.getInt("review_id"));
         return Review.builder()
                 .reviewId(rs.getInt("review_id"))
                 .content(rs.getString("content"))

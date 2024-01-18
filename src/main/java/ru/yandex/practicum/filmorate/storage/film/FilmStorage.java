@@ -28,4 +28,6 @@ public interface FilmStorage {
     List<Film> getFilmsByDirector(Integer directorId, SortBy sortBy);
 
     List<Film> getCommonFilms(Integer userId, Integer friendId);
+
+    boolean isFilmExist(Integer filmId);
 }

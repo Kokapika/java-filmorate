@@ -244,4 +244,9 @@ public class FilmDbStorage implements FilmStorage {
                     .build());
         });
     }
+
+    public boolean isFilmExist(Integer filmId) {
+        String sql = "SELECT 1 FROM Films WHERE film_id = ?";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> true, filmId).stream().findFirst().orElse(false);
+    }
 }

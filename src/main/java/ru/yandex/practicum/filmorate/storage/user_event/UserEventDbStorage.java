@@ -30,6 +30,9 @@ public class UserEventDbStorage implements UserEventStorage {
         if (insertResult > 0) {
             log.info("Event type:{}, operation type: {} has added for user by ID {} entity by ID {}.",
                     eventType.name(), operationType.name(), userId, entityId);
+        } else {
+            log.info("Event type:{}, operation type: {} has NOT added for user by ID {} entity by ID {}.",
+                    eventType.name(), operationType.name(), userId, entityId);
         }
     }
 
