@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmDbService;
-import ru.yandex.practicum.filmorate.service.LikeDbService;
+import ru.yandex.practicum.filmorate.model.enums.SearchBy;
+import ru.yandex.practicum.filmorate.model.enums.SortBy;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.LikeService;
 
 import javax.validation.Valid;
 import javax.validation.ValidationException;
@@ -20,12 +22,8 @@ import java.util.List;
 @Validated
 @Slf4j
 public class FilmController {
-    private final FilmDbService filmDbService;
-    private final LikeDbService likesDbService;
-
-    protected void deleteFilms() {
-        filmDbService.deleteFilms();
-    }
+    private final FilmService filmDbService;
+    private final LikeService likesDbService;
 
     @GetMapping
     public List<Film> getFilms() {
@@ -40,14 +38,14 @@ public class FilmController {
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
         checkFilm(film);
-        log.info("FilmController addFilm film {} ", film.getName());
+        log.info("addFilm film {} ", film.getName());
         return filmDbService.addFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         checkFilm(film);
-        log.info("FilmController updateFilm film {} ", film.getId());
+        log.info("updateFilm film {} ", film.getId());
         return filmDbService.updateFilm(film);
     }
 
@@ -91,9 +89,10 @@ public class FilmController {
     @GetMapping("/director/{directorId}")
     public List<Film> getFilmsByDirector(
             @PathVariable Integer directorId,
-            @RequestParam(defaultValue = "year") String sortBy) {
-        log.info("FilmController getFilmsByDirector director {} sortBy {} ", directorId, sortBy);
-        return filmDbService.getFilmsByDirector(directorId, sortBy);
+            @RequestParam String sortBy) {
+        log.info("getFilmsByDirector director {} sortBy {} ", directorId, sortBy);
+        SortBy sortByEnum = SortBy.valueOf(sortBy.toUpperCase());
+        return filmDbService.getFilmsByDirector(directorId, sortByEnum);
     }
 
     /**
@@ -107,13 +106,23 @@ public class FilmController {
     public List<Film> getCommonFilms(
             @RequestParam Integer userId,
             @RequestParam Integer friendId) {
-        log.info("FilmController getCommonFilms for userId {} friendId {}", userId, friendId);
+        log.info("getCommonFilms for userId {} friendId {}", userId, friendId);
         return filmDbService.getCommonFilms(userId, friendId);
     }
 
     @GetMapping("/search")
-    public List<Film> getSearchFilms(@RequestParam String query,
-                                     @RequestParam String by) {
-        return filmDbService.getSearchFilms(query, by);
+    public List<Film> searchFilms(@RequestParam String query,
+                                  @RequestParam String by) {
+        SearchBy searchByEnum = null;
+        if (by.equalsIgnoreCase("title")) {
+            searchByEnum = SearchBy.TITLE;
+        }
+        if (by.equalsIgnoreCase("director")) {
+            searchByEnum = SearchBy.DIRECTOR;
+        }
+        if (by.equalsIgnoreCase("title,director") || by.equalsIgnoreCase("director,title")) {
+            searchByEnum = SearchBy.TITLE_AND_DIRECTOR;
+        }
+        return filmDbService.searchFilms(query, searchByEnum);
     }
 }

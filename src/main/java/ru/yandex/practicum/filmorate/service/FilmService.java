@@ -1,31 +1,38 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.enums.SearchBy;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.FilmGenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
+import ru.yandex.practicum.filmorate.model.enums.SortBy;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class FilmDbService {
+public class FilmService {
     private final FilmStorage filmStorage;
     private final FilmGenreStorage filmGenreStorage;
     private final MpaStorage mpaStorage;
     private final DirectorStorage directorStorage;
-    private final UserDbService userDbService;
+    private final UserService userService;
 
     public Film addFilm(Film film) {
         Film newFilm = filmStorage.createFilm(film);
-        if (film.getGenres() != null) {
-            filmGenreStorage.updateGenres(film.getId(), film.getGenres());
+        if (!film.getGenres().isEmpty()) {
+            List<Genre> uniqueGenres = film.getGenres().stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+            filmGenreStorage.updateGenres(film.getId(), uniqueGenres);
         }
         if (!film.getDirectors().isEmpty()) {
             List<Director> uniqueDirectors = film.getDirectors().stream()
@@ -44,7 +51,10 @@ public class FilmDbService {
         Film updateFilm = filmStorage.updateFilm(film);
         filmGenreStorage.deleteGenresByFilmId(film.getId());
         if (film.getGenres() != null) {
-            filmGenreStorage.updateGenres(film.getId(), film.getGenres());
+            List<Genre> uniqueGenres = film.getGenres().stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+            filmGenreStorage.updateGenres(film.getId(), uniqueGenres);
         }
         List<Director> uniqueDirectors = film.getDirectors()
                 .stream()
@@ -57,7 +67,7 @@ public class FilmDbService {
                 .stream()
                 .map(director -> director.getId())
                 .collect(Collectors.toList());
-        if (!uniqueDirectorsId.equals(oldDirectorsId)) {
+        if (!CollectionUtils.isEqualCollection(uniqueDirectorsId, oldDirectorsId)) {
             directorStorage.deleteAllDirectorByFilmId(film.getId());
             if (!uniqueDirectors.isEmpty()) {
                 directorStorage.updateFilmDirectors(film.getId(), uniqueDirectors);
@@ -73,8 +83,8 @@ public class FilmDbService {
         return filmStorage.getAllFilms();
     }
 
-    public void deleteFilms() {
-        filmStorage.deleteAllFilms();
+    public List<Film> getFilms(List<Integer> filmIds) {
+        return filmStorage.getFilms(filmIds);
     }
 
     public Film getFilmById(Integer id) {
@@ -92,7 +102,7 @@ public class FilmDbService {
         return filmStorage.getPopularFilms(count, genreId, year);
     }
 
-    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+    public List<Film> getFilmsByDirector(Integer directorId, SortBy sortBy) {
         if (!directorStorage.isDirectorExist(directorId)) {
             throw new NotFoundException("Режиссер не найден id = " + directorId);
         }
@@ -100,16 +110,16 @@ public class FilmDbService {
     }
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        if (!userDbService.isExistingUser(userId)) {
+        if (!userService.isExistingUser(userId)) {
             throw new NotFoundException("User не найден id = " + userId);
         }
-        if (!userDbService.isExistingUser(friendId)) {
+        if (!userService.isExistingUser(friendId)) {
             throw new NotFoundException("Friend не найден id = " + friendId);
         }
         return filmStorage.getCommonFilms(userId, friendId);
     }
 
-    public List<Film> getSearchFilms(String query, String by) {
-        return filmStorage.getSearchFilms(query, by);
+    public List<Film> searchFilms(String query, SearchBy searchByEnum) {
+        return filmStorage.searchFilms(query, searchByEnum);
     }
 }

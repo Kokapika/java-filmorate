@@ -46,7 +46,6 @@ public class UserEventDbStorage implements UserEventStorage {
     private UserEvent mapToUserEvent(ResultSet rs, int rowNum) throws SQLException {
         EventType eventType = EventType.valueOf(rs.getString("event_type"));
         OperationType operationType = OperationType.valueOf(rs.getString("operation"));
-
         return UserEvent.builder()
                 .eventId(rs.getInt("event_id"))
                 .eventType(eventType)

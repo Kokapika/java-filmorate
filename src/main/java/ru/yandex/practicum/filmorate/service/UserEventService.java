@@ -12,14 +12,14 @@ import ru.yandex.practicum.filmorate.storage.user_event.UserEventStorage;
 import java.util.List;
 
 @Service
-public class UserEventDbService {
+public class UserEventService {
     private final UserEventStorage userEventStorage;
-    private final UserDbService userDbService;
+    private final UserService userService;
 
     @Autowired
-    public UserEventDbService(UserEventStorage userEventStorage, @Lazy UserDbService userDbService) {
+    public UserEventService(UserEventStorage userEventStorage, @Lazy UserService userService) {
         this.userEventStorage = userEventStorage;
-        this.userDbService = userDbService;
+        this.userService = userService;
     }
 
     public void addEvent(EventType eventType, int userId, int entityId, OperationType operationType) {
@@ -27,7 +27,7 @@ public class UserEventDbService {
     }
 
     public List<UserEvent> getEventsByUserId(int userId) {
-        if (!userDbService.isExistingUser(userId)) {
+        if (!userService.isExistingUser(userId)) {
             throw new NotFoundException("Not founded user by ID:" + userId);
         }
         return userEventStorage.getEventsByUserId(userId);

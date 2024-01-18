@@ -14,34 +14,34 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.util.List;
 
 @Service
-public class ReviewDbService {
+public class ReviewService {
     public static final int DOWN_RATING = -1;
     public static final int UP_RATING = 1;
     private final ReviewStorage reviewStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private final UserEventDbService userEventDbService;
+    private final UserEventService userEventService;
 
     @Autowired
-    public ReviewDbService(ReviewStorage reviewStorage, FilmStorage filmStorage, UserStorage userStorage,
-                           UserEventDbService userEventDbService) {
+    public ReviewService(ReviewStorage reviewStorage, FilmStorage filmStorage, UserStorage userStorage,
+                         UserEventService userEventService) {
         this.reviewStorage = reviewStorage;
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
-        this.userEventDbService = userEventDbService;
+        this.userEventService = userEventService;
     }
 
     public Review createReview(Review review) {
         filmStorage.getFilmById(review.getFilmId());
         userStorage.getUserById(review.getUserId());
         Review createdReview = reviewStorage.createReview(review);
-        userEventDbService.addEvent(EventType.REVIEW, review.getUserId(), review.getReviewId(), OperationType.ADD);
+        userEventService.addEvent(EventType.REVIEW, review.getUserId(), review.getReviewId(), OperationType.ADD);
         return createdReview;
     }
 
     public Review updateReview(Review review) {
         Review updatedReview = reviewStorage.updateReview(review);
-        userEventDbService.addEvent(EventType.REVIEW, updatedReview.getUserId(), review.getReviewId(), OperationType.UPDATE);
+        userEventService.addEvent(EventType.REVIEW, updatedReview.getUserId(), review.getReviewId(), OperationType.UPDATE);
         return updatedReview;
     }
 
@@ -49,7 +49,7 @@ public class ReviewDbService {
         Integer userId = getReviewById(id).getUserId();
         Integer deleteResult = reviewStorage.deleteReviewById(id);
         if (deleteResult > 0) {
-            userEventDbService.addEvent(EventType.REVIEW, userId, id, OperationType.REMOVE);
+            userEventService.addEvent(EventType.REVIEW, userId, id, OperationType.REMOVE);
         }
         return deleteResult;
     }
