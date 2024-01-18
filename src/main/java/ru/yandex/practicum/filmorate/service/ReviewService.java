@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -59,9 +58,8 @@ public class ReviewService {
     }
 
     public Review getReviewById(int id) {
-            return reviewStorage.getReviewById(id)
-                    .orElseThrow(() -> new NotFoundException("Review with id " + id + " does not exist."));
-
+        return reviewStorage.getReviewById(id)
+                .orElseThrow(() -> new NotFoundException("Review with id " + id + " does not exist."));
     }
 
     public List<Review> getAllReviews(Integer filmId, Integer count) {
