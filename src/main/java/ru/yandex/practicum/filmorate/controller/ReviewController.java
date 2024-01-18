@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
@@ -34,6 +35,9 @@ public class ReviewController {
 
     @DeleteMapping("/{id}")
     public Integer deleteReviewById(@PathVariable int id) {
+        if (id < 1) {
+            throw new NotFoundException("User not exists by ID=" + id);
+        }
         log.info("DELETE request received to remove review by id:" + id);
         return reviewService.deleteReviewById(id);
     }

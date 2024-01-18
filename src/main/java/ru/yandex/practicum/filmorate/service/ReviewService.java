@@ -32,8 +32,12 @@ public class ReviewService {
     }
 
     public Review createReview(Review review) {
-        filmStorage.getFilmById(review.getFilmId());
-        userStorage.getUserById(review.getUserId());
+        if (!filmStorage.isFilmExist(review.getFilmId())) {
+            throw new NotFoundException("Film not exist");
+        }
+        if (!userStorage.isExistingUser(review.getUserId())) {
+            throw new NotFoundException("User not exist");
+        }
         Review createdReview = reviewStorage.createReview(review);
         userEventService.addEvent(EventType.REVIEW, review.getUserId(), review.getReviewId(), OperationType.ADD);
         return createdReview;
@@ -55,12 +59,9 @@ public class ReviewService {
     }
 
     public Review getReviewById(int id) {
-        try {
             return reviewStorage.getReviewById(id)
                     .orElseThrow(() -> new NotFoundException("Review with id " + id + " does not exist."));
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Review with id " + id + " does not exist.");
-        }
+
     }
 
     public List<Review> getAllReviews(Integer filmId, Integer count) {
