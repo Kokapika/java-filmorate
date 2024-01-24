@@ -10,4 +10,6 @@ public interface LikeStorage {
     int deleteLike(int filmId, int userId);
 
     List<FilmLikes> getAllLikes();
+
+    List<FilmLikes> getCommonLikes(int userId);
 }

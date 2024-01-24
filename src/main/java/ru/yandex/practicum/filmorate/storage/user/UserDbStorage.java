@@ -31,7 +31,6 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.update(sql, id, friendId);
     }
 
-
     @Override
     public User createUser(User user) {
         Map<String, Object> values = new HashMap<>();
@@ -90,6 +89,12 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public boolean isExistingUser(int userId) {
+        String sql = "select 1 from users where user_id = ?";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> true, userId).stream().findFirst().orElse(false);
+    }
+
+    @Override
     public List<User> getFriendsById(int id) {
         String sql = "SELECT * " +
                 "FROM users AS u, friends AS f " +
@@ -106,6 +111,12 @@ public class UserDbStorage implements UserStorage {
                 "AND u.user_id = of.friend_id " +
                 "AND f.user_id = ? AND of.user_id = ?";
         return jdbcTemplate.query(sql, this::userMapper, id, friendId);
+    }
+
+    @Override
+    public boolean isFriend(int userId, int friendId) {
+        String sql = "SELECT 1 FROM friends where USER_ID = ? FRIENd_ID =?";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> true, userId, friendId).stream().findFirst().orElse(false);
     }
 
     private User userMapper(ResultSet rs, int rowNum) throws SQLException {

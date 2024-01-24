@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.dao.DuplicateKeyException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
@@ -27,9 +28,16 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleAllOtherExceptions(final Throwable e) {
-        log.warn("Неизвестная ошибка сервера");
-        return new ErrorResponse("Ошибка сервера", e.getMessage());
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ErrorResponse handleDuplicateKeyException(final DuplicateKeyException e) {
+        log.warn("Дубликат ключа");
+        return new ErrorResponse("Ошибка дубликата ключа", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
+        log.warn("Некорректные аргументы");
+        return new ErrorResponse("Ошибка входных аргументов", e.getMessage());
     }
 }

@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmDbService;
-import ru.yandex.practicum.filmorate.service.LikeDbService;
+import ru.yandex.practicum.filmorate.model.enums.SearchBy;
+import ru.yandex.practicum.filmorate.model.enums.SortBy;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.LikeService;
 
 import javax.validation.Valid;
 import javax.validation.ValidationException;
@@ -20,12 +22,8 @@ import java.util.List;
 @Validated
 @Slf4j
 public class FilmController {
-    private final FilmDbService filmDbService;
-    private final LikeDbService likesDbService;
-
-    protected void deleteFilms() {
-        filmDbService.deleteFilms();
-    }
+    private final FilmService filmDbService;
+    private final LikeService likesDbService;
 
     @GetMapping
     public List<Film> getFilms() {
@@ -40,12 +38,14 @@ public class FilmController {
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
         checkFilm(film);
+        log.info("addFilm film {} ", film.getName());
         return filmDbService.addFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         checkFilm(film);
+        log.info("updateFilm film {} ", film.getId());
         return filmDbService.updateFilm(film);
     }
 
@@ -65,13 +65,64 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@Positive @RequestParam(name = "count", defaultValue = "10", required = false) Integer count) {
-        return filmDbService.getPopularFilms(count);
+    public List<Film> getPopularFilms(@Positive @RequestParam(name = "count", defaultValue = "10", required = false) Integer count,
+                                      @RequestParam(required = false) Integer genreId,
+                                      @RequestParam(required = false) Integer year) {
+        return filmDbService.getPopularFilms(count, genreId, year);
     }
 
     private void checkFilm(Film film) {
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28)))
             throw new ValidationException("Дата релиза не должна быть раньше 28 декабря 1895 года. Введено: "
                     + film.getReleaseDate());
+    }
+
+    /**
+     * Получает список фильмов режиссера по указанному идентификатору,
+     * отсортированный по количеству лайков или году выпуска в соответствии
+     * с заданным параметром сортировки.
+     *
+     * @param directorId Идентификатор режиссера.
+     * @param sortBy     Параметр сортировки, может принимать значения "year" или "likes".
+     * @return Список фильмов режиссера отсортированный по указанному параметру.
+     */
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(
+            @PathVariable Integer directorId,
+            @RequestParam String sortBy) {
+        log.info("getFilmsByDirector director {} sortBy {} ", directorId, sortBy);
+        SortBy sortByEnum = SortBy.valueOf(sortBy.toUpperCase());
+        return filmDbService.getFilmsByDirector(directorId, sortByEnum);
+    }
+
+    /**
+     * Получает список фильмов, которые отметили 2 пользователя.
+     *
+     * @param userId   Идентификатор пользователя.
+     * @param friendId Идентификатор 2го пользователя .
+     * @return Список фильмов по указанным параметрам.
+     */
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(
+            @RequestParam Integer userId,
+            @RequestParam Integer friendId) {
+        log.info("getCommonFilms for userId {} friendId {}", userId, friendId);
+        return filmDbService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/search")
+    public List<Film> searchFilms(@RequestParam String query,
+                                  @RequestParam String by) {
+        SearchBy searchByEnum = null;
+        if (by.equalsIgnoreCase("title")) {
+            searchByEnum = SearchBy.TITLE;
+        }
+        if (by.equalsIgnoreCase("director")) {
+            searchByEnum = SearchBy.DIRECTOR;
+        }
+        if (by.equalsIgnoreCase("title,director") || by.equalsIgnoreCase("director,title")) {
+            searchByEnum = SearchBy.TITLE_AND_DIRECTOR;
+        }
+        return filmDbService.searchFilms(query, searchByEnum);
     }
 }
